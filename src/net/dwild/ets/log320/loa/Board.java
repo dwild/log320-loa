@@ -16,17 +16,20 @@ public class Board {
     }
 
     public void createBoard(String serverMessage) {
+        int[][] newboardConfiguration = new int[8][8];
         String[] values;
         values = serverMessage.split(" ");
         int x=0,y=0;
         // On doit commencer à 1 pour sauter par-dessus le message du serveur
         for(int i=1; i<values.length;i++){
-            boardConfiguration[x][y] = Integer.parseInt(values[i]);
+            newboardConfiguration[x][y] = Integer.parseInt(values[i]);
             x++;
             if(x == 8){
                 x = 0;
                 y++;
             }
         }
+        // Valider le board ici, au besoin?
+        boardConfiguration = newboardConfiguration;
     }
 }

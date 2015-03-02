@@ -2,24 +2,24 @@ package net.dwild.ets.log320.ClientData;
 
 
 public class TurnPlay {
-	
-	private Square firstMove;
-	private Square secondMove;
-	
-	public TurnPlay(Square firstMove, Square secondMove) {
-		this.firstMove = firstMove;
-		this.secondMove = secondMove;
-	}
-	
-	public Square getFirstMove() {
-		return firstMove;
-	}
-	
-	public Square getSecondMove() {
-		return secondMove;
-	}
-	
-	public String toString() {
-		return firstMove.toString() + " - " + secondMove.toString();
-	}
+ 
+ private Square from;
+ private Square to;
+ 
+ public TurnPlay(Square from, Square to) {
+  this.from = from;
+  this.to = to;
+ }
+ 
+ public Square getFrom() {
+  return from;
+ }
+ 
+ public Square getTo() {
+  return to;
+ }
+ 
+ public String toString() {
+  return from.toString() + " - " + to.toString();
+ }
 }

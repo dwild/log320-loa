@@ -91,9 +91,9 @@ public class Game {
 		if (move != null) {
 			move = move.replaceAll("\\s","");
 			int indexOfHyphen = move.indexOf("-");
-			String firstMove = move.substring(0, indexOfHyphen);
-			String secondMove = move.substring(indexOfHyphen + 1);
-			endTurn(new Square(firstMove), new Square(secondMove));	
+			String from = move.substring(0, indexOfHyphen);
+			String to = move.substring(indexOfHyphen + 1);
+			endTurn(new Square(from), new Square(to));
 		}
 		else {	
 			endTurn(new Square(1, 2), new Square(3, 4));	

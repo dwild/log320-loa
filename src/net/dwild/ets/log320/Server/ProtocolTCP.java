@@ -30,7 +30,7 @@ public class ProtocolTCP implements IProtocol {
   } catch (UnknownHostException e) {
    System.out.println("Le serveur «" + host + "» n'est pas valide");
   } catch (IOException e) {
-   System.out.println("Le serveur «" + host + "» ne répond pas sur le port " + port);
+      System.out.println("Le serveur «" + host + "» ne répond pas sur le port " + port);
   } catch (IllegalArgumentException e) {
    System.out.println("Les arguments fournis au serveur sont invalides.");
   }

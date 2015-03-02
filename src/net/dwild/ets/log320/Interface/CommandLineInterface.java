@@ -7,8 +7,8 @@ public class CommandLineInterface {
 
     public void drawBoard(int[][] board) {
         String toPrint = "";
-        for(int y=7; y>=0;y--) {
-            toPrint += y+1 + "\t";
+        for(int y=0; y<=7;y++) {
+            toPrint += 8-y + "\t";
             for (int x=0; x<8;x++) {
                 if (board[x][y] == NOIR) {
                     toPrint += "O\t";

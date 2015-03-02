@@ -29,7 +29,7 @@ public class ClientPlayer {
  
  public int[][] getBoard() {
   String answer = protocol.readLine(1024);
-  
+
   int[][] board = new int[8][8];
   String[] boardValues; 
         boardValues = answer.split(" ");

@@ -10,6 +10,13 @@ import net.dwild.ets.log320.ClientData.TurnPlay;
 import net.dwild.ets.log320.Interface.CommandLineInterface;
 
 public class Game {
+
+    char START_WHITE = '1';
+    char START_BLACK = '2';
+    char MOVE_RECEIVED = '3';
+    char INVALID_MOVE = '4';
+
+    int CASE_VIDE = 0;
 	
 	private ClientPlayer client;
 	private CommandLineInterface commandLineInterface;
@@ -28,22 +35,21 @@ public class Game {
 		client.initConnexion();
 		while (client.isConnected()) {
 			char cmd = client.getCommand();
-			
-			if (cmd == '3') {
+			if (cmd == MOVE_RECEIVED) {
 				TurnPlay turnOpponent = client.getTurnOpponent();
 				alterBoard(turnOpponent);
 				commandLineInterface.drawBoard(board);
 				playTurn();
 			}
-			else if (cmd == '4') {
+			else if (cmd == INVALID_MOVE) {
 				playTurn();
 			}
-			else if (cmd == '1') {
+			else if (cmd == START_WHITE) {
 				board = client.getBoard();
 				commandLineInterface.drawBoard(board);
 				playTurn();
 			}
-			else if (cmd == '2') {
+			else if (cmd == START_BLACK) {
 				board = client.getBoard();
 				commandLineInterface.drawBoard(board);
 			}
@@ -64,6 +70,9 @@ public class Game {
 	
 	public void alterBoard(TurnPlay turnOpponent) {
 		// alter board by the most opponent's recent turn
+        int storedValue = board[turnOpponent.getFrom().getX()][turnOpponent.getFrom().getY()];
+        board[turnOpponent.getFrom().getX()][turnOpponent.getFrom().getY()] = CASE_VIDE;
+        board[turnOpponent.getTo().getX()][turnOpponent.getTo().getY()] = storedValue;
 	}
 	
 	public void showInterface() {

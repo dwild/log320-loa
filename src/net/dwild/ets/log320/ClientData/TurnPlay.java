@@ -1,4 +1,4 @@
-package ClientData;
+package net.dwild.ets.log320.ClientData;
 
 
 public class TurnPlay {

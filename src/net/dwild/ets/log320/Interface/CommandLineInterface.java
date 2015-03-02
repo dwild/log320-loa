@@ -1,23 +1,19 @@
-package net.dwild.ets.log320.loa;
+package net.dwild.ets.log320.Interface;
 
 public class CommandLineInterface {
 
-    int NOIR = 2;
-    int BLANC = 4;
+    private static final int NOIR = 2;
+    private static final int BLANC = 4;
 
-    public CommandLineInterface() {
-    }
-
-    public void drawBoard(Board board) {
-        int[][] configuration = board.boardConfiguration;
+    public void drawBoard(int[][] board) {
         String toPrint = "";
         for(int y=7; y>=0;y--) {
             toPrint += y+1 + "\t";
             for (int x=0; x<8;x++) {
-                if (configuration[x][y] == NOIR) {
+                if (board[x][y] == NOIR) {
                     toPrint += "O\t";
                 }
-                else if (configuration[x][y] == BLANC) {
+                else if (board[x][y] == BLANC) {
                     toPrint += "X\t";
                 }
                 else {

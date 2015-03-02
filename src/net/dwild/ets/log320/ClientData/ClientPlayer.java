@@ -1,6 +1,7 @@
-package ClientData;
+package net.dwild.ets.log320.ClientData;
 
-import Server.IProtocol;
+import net.dwild.ets.log320.Server.IProtocol;
+
 
 public class ClientPlayer {
 	private IProtocol protocol;

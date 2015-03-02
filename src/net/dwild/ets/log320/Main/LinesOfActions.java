@@ -1,9 +1,10 @@
-package Main;
+package net.dwild.ets.log320.Main;
 
-import ClientData.ClientPlayer;
-import GameLogic.Game;
-import Server.IProtocol;
-import Server.ProtocolTCP;
+import net.dwild.ets.log320.ClientData.ClientPlayer;
+import net.dwild.ets.log320.GameLogic.Game;
+import net.dwild.ets.log320.Server.IProtocol;
+import net.dwild.ets.log320.Server.ProtocolTCP;
+
 
 public class LinesOfActions{
 	

@@ -1,4 +1,4 @@
-package Server;
+package net.dwild.ets.log320.Server;
 
 public interface IProtocol {
 	public void connect();

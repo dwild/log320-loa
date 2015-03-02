@@ -1,4 +1,4 @@
-package Server;
+package net.dwild.ets.log320.Server;
  
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;

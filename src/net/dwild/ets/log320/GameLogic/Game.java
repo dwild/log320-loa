@@ -1,16 +1,18 @@
-package GameLogic;
+package net.dwild.ets.log320.GameLogic;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import ClientData.ClientPlayer;
-import ClientData.Square;
-import ClientData.TurnPlay;
+import net.dwild.ets.log320.ClientData.ClientPlayer;
+import net.dwild.ets.log320.ClientData.Square;
+import net.dwild.ets.log320.ClientData.TurnPlay;
+import net.dwild.ets.log320.Interface.CommandLineInterface;
 
 public class Game {
 	
 	private ClientPlayer client;
+	private CommandLineInterface commandLineInterface;
 	private int[][] board = new int[8][8];
 	// À RETIRER***********************
 	private BufferedReader console;
@@ -19,6 +21,7 @@ public class Game {
 		this.client = client;
 		// À RETIRER***********************
 		console = new BufferedReader(new InputStreamReader(System.in)); 
+		commandLineInterface = new CommandLineInterface();
 	}
 	
 	public void play() {
@@ -29,7 +32,7 @@ public class Game {
 			if (cmd == '3') {
 				TurnPlay turnOpponent = client.getTurnOpponent();
 				alterBoard(turnOpponent);
-				showInterface();
+				commandLineInterface.drawBoard(board);
 				playTurn();
 			}
 			else if (cmd == '4') {
@@ -37,12 +40,12 @@ public class Game {
 			}
 			else if (cmd == '1') {
 				board = client.getBoard();
-				showInterface();
+				commandLineInterface.drawBoard(board);
 				playTurn();
 			}
 			else if (cmd == '2') {
 				board = client.getBoard();
-				showInterface();
+				commandLineInterface.drawBoard(board);
 			}
 		}
 	}

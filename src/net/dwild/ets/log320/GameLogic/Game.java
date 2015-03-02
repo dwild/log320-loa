@@ -14,12 +14,12 @@ public class Game {
 	private ClientPlayer client;
 	private CommandLineInterface commandLineInterface;
 	private int[][] board = new int[8][8];
-	// À RETIRER***********************
+	// Ã€ RETIRER***********************
 	private BufferedReader console;
 	
 	public Game(ClientPlayer client) {
 		this.client = client;
-		// À RETIRER***********************
+		// Ã€ RETIRER***********************
 		console = new BufferedReader(new InputStreamReader(System.in)); 
 		commandLineInterface = new CommandLineInterface();
 	}
@@ -53,7 +53,7 @@ public class Game {
 	public void playTurn() {
 		// some logic to get best move
 		
-		// À RETIRER***********************
+		// Ã€ RETIRER***********************
 		getInputConsoleMove();
 	}
 	
@@ -70,7 +70,7 @@ public class Game {
 		// show interface here
 	}
 	
-	// À RETIRER***********************
+	// Ã€ RETIRER***********************
 	public void getInputConsoleMove() {
 		String move = null;
 		try {

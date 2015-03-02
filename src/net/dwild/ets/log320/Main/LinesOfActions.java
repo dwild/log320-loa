@@ -13,6 +13,6 @@ public class LinesOfActions{
 		ClientPlayer client = new ClientPlayer(connexionTCP);
 		Game game = new Game(client);
 		game.play();
-		System.out.println("Partie terminé.");   		
+		System.out.println("Partie terminÃ©.");
 	}	
 }

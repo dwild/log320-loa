@@ -77,36 +77,73 @@ public class Board {
         }
     }
 
-    public ArrayList<Square> validMoves(Square position) {
+    public ArrayList<TurnPlay> allPossibleMoves(int token) {
+        ArrayList<TurnPlay> possibleMoves = new ArrayList<TurnPlay>();
+
+        for (int x = 0; x < 8; x++) {
+            for (int y = 0; y < 8; y++) {
+                if (get(x, y) == token) {
+                    Square from = new Square(x, y);
+                    for(Square to:validMoves(from)) {
+                        possibleMoves.add(new TurnPlay(from, to));
+                    }
+                }
+            }
+        }
+
+        return possibleMoves;
+    }
+
+    public ArrayList<Square> validMoves(Square from) {
         ArrayList<Square> validMoves = new ArrayList<Square>();
 
-        int x = position.getX();
-        int y = position.getY();
+        int x = from.getX();
+        int y = from.getY();
+
+        int tokenFrom = get(x, y);
 
         int countHorizontal = lineTokens[y];
         int countVertical = columnTokens[x];
         int countDiagonal1 = diagonal1Tokens[(x - y + 7)];
         int countDiagonal2 = diagonal2Tokens[(14 - x - y)];
 
-        System.out.println(countDiagonal1 + " " + countDiagonal2 + " " + countHorizontal + " " + countVertical);
+        validMoves.add(new Square(from.getX() - countDiagonal1, from.getY() - countDiagonal1));
+        validMoves.add(new Square(from.getX() + countDiagonal1, from.getY() + countDiagonal1));
 
-        validMoves.add(new Square(position.getX() - countDiagonal1, position.getY() - countDiagonal1));
-        validMoves.add(new Square(position.getX() + countDiagonal1, position.getY() + countDiagonal1));
+        validMoves.add(new Square(from.getX() + countDiagonal2, from.getY() - countDiagonal2));
+        validMoves.add(new Square(from.getX() - countDiagonal2, from.getY() + countDiagonal2));
 
-        validMoves.add(new Square(position.getX() + countDiagonal2, position.getY() - countDiagonal2));
-        validMoves.add(new Square(position.getX() - countDiagonal2, position.getY() + countDiagonal2));
+        validMoves.add(new Square(from.getX() - countHorizontal, from.getY()));
+        validMoves.add(new Square(from.getX() + countHorizontal, from.getY()));
 
-        validMoves.add(new Square(position.getX() - countHorizontal, position.getY()));
-        validMoves.add(new Square(position.getX() + countHorizontal, position.getY()));
-
-        validMoves.add(new Square(position.getX(), position.getY() - countVertical));
-        validMoves.add(new Square(position.getX(), position.getY() + countVertical));
+        validMoves.add(new Square(from.getX(), from.getY() - countVertical));
+        validMoves.add(new Square(from.getX(), from.getY() + countVertical));
 
         ArrayList<Square> finalValidMoves = new ArrayList<Square>();
-        for (Square move : validMoves) {
-            if (move.getX() > 0 && move.getX() < 8 && move.getY() > 0 && move.getY() < 8 && get(move.getX(), move.getY()) == 0) {
-                //TODO vérifier qu'on ne saute pas par dessus un pion adverse
-                finalValidMoves.add(move);
+        for (Square to : validMoves) {
+            if (to.getX() > 0 && to.getX() < 8 && to.getY() > 0 && to.getY() < 8 && get(to.getX(), to.getY()) == 0) {
+                boolean validMove = true;
+
+                Square start = (to.getX() > from.getX())?from:to;
+                Square end = (to.getX() < from.getX())?from:to;
+
+                int dx = end.getX() - start.getX();
+                int dy = end.getY() - start.getY();
+
+                for(int ix = start.getX(); ix < end.getX(); ix++) {
+                    int iy = start.getY() + ( dy * (ix - start.getX())) / dx; //TODO Optimiser ça?
+
+                    int token = get(ix, iy);
+
+                    if(token != NONE && tokenFrom != token) {
+                        validMove = false;
+                        break;
+                    }
+                }
+
+                if(validMove) {
+                    finalValidMoves.add(to);
+                }
             }
         }
 

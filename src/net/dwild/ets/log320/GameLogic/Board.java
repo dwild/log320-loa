@@ -4,8 +4,9 @@ import net.dwild.ets.log320.ClientData.Square;
 import net.dwild.ets.log320.ClientData.TurnPlay;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
-public class Board {
+public class Board implements Cloneable {
 
     public final static int NONE = 0;
     public final static int BLACK = 2;
@@ -26,6 +27,14 @@ public class Board {
         this.board = board;
 
         calcTokens();
+    }
+
+    private Board(int[][] board, int[] lineTokens, int[] columnTokens, int[] diagonal1Tokens, int[] diagonal2Tokens) {
+        this.board = board;
+        this.lineTokens = lineTokens;
+        this.columnTokens = columnTokens;
+        this.diagonal1Tokens = diagonal1Tokens;
+        this.diagonal2Tokens = diagonal2Tokens;
     }
 
     private void calcTokens() {
@@ -124,20 +133,40 @@ public class Board {
             if (to.getX() > 0 && to.getX() < 8 && to.getY() > 0 && to.getY() < 8 && get(to.getX(), to.getY()) == 0) {
                 boolean validMove = true;
 
-                Square start = (to.getX() > from.getX())?from:to;
-                Square end = (to.getX() < from.getX())?from:to;
+                if(Math.abs(from.getX() - to.getX()) > Math.abs(from.getY() - to.getY())) {
+                    Square start = (to.getX() > from.getX())?from:to;
+                    Square end = (to.getX() < from.getX())?from:to;
 
-                int dx = end.getX() - start.getX();
-                int dy = end.getY() - start.getY();
+                    int dx = end.getX() - start.getX();
+                    int dy = end.getY() - start.getY();
 
-                for(int ix = start.getX(); ix < end.getX(); ix++) {
-                    int iy = start.getY() + ( dy * (ix - start.getX())) / dx; //TODO Optimiser ça?
+                    for(int ix = start.getX(); ix < end.getX(); ix++) {
+                        int iy = start.getY() + ( dy * (ix - start.getX())) / dx; //TODO Optimiser ça?
 
-                    int token = get(ix, iy);
+                        int token = get(ix, iy);
 
-                    if(token != NONE && tokenFrom != token) {
-                        validMove = false;
-                        break;
+                        if(token != NONE && tokenFrom != token) {
+                            validMove = false;
+                            break;
+                        }
+                    }
+                }
+                else {
+                    Square start = (to.getY() > from.getY())?from:to;
+                    Square end = (to.getY() < from.getY())?from:to;
+
+                    int dx = end.getX() - start.getX();
+                    int dy = end.getY() - start.getY();
+
+                    for(int iy = start.getY(); iy < end.getY(); iy++) {
+                        int ix = start.getX() + ( dx * (iy - start.getY())) / dy; //TODO Optimiser ça?
+
+                        int token = get(ix, iy);
+
+                        if(token != NONE && tokenFrom != token) {
+                            validMove = false;
+                            break;
+                        }
                     }
                 }
 
@@ -161,5 +190,20 @@ public class Board {
 
     public void set(int x, int y, int value) {
         board[x][y] = value;
+    }
+
+    public Board clone() {
+        int[][] copyBoard = new int[8][8];
+
+        for(int y = 0; y < 8; y++) {
+            copyBoard[y] = Arrays.copyOf(board[y], 8);
+        }
+
+        int[] copyLineTokens = Arrays.copyOf(lineTokens, 8);
+        int[] copyColumnTokens = Arrays.copyOf(columnTokens, 8);
+        int[] copyDiagonal1Tokens = Arrays.copyOf(diagonal1Tokens, 15);
+        int[] copyDiagonal2Tokens = Arrays.copyOf(diagonal2Tokens, 15);
+
+        return new Board(copyBoard, copyLineTokens, copyColumnTokens, copyDiagonal1Tokens, copyDiagonal2Tokens);
     }
 }

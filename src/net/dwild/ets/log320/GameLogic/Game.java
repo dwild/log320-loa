@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 import net.dwild.ets.log320.ClientData.ClientPlayer;
 import net.dwild.ets.log320.ClientData.Square;
@@ -58,8 +60,39 @@ public class Game {
     }
 
     public void playTurn() {
-        // some logic to get best move
-        getInputConsoleMove();
+        ArrayList<TurnPlay> moves = board.allPossibleMoves(Board.BLACK);
+        ArrayList<BoardNode> nodes = new ArrayList<BoardNode>();
+
+        for(TurnPlay move:moves) {
+            Board boardClone = board.clone();
+            boardClone.move(move);
+
+            BoardNode boardNode = new BoardNode(boardClone, move);
+
+            ArrayList<TurnPlay> childMoves = boardClone.allPossibleMoves(Board.WHITE);
+            ArrayList<BoardNode> childNodes = new ArrayList<BoardNode>();
+            boardNode.setChilds(childNodes);
+            for(TurnPlay move2:childMoves) {
+
+            }
+
+            nodes.add(boardNode);
+        }
+
+        Collections.sort(nodes, new Comparator<BoardNode>() {
+                    @Override
+                    public int compare(BoardNode bn1, BoardNode bn2) {
+                        return Integer.compare(bn2.getScore(), bn1.getScore());
+                    }
+                }
+        );
+
+        BoardNode bestNode = nodes.get(0);
+        System.out.println(bestNode.getMove() + ", " + bestNode.getScore());
+
+        endTurn(bestNode.getMove());
+
+        //getInputConsoleMove();
     }
 
     public void endTurn(TurnPlay move) {

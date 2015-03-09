@@ -56,8 +56,8 @@ public class ClientPlayer {
 	String answer = protocol.readLine(16);
 	answer = answer.replaceAll("\\s|-","");
 		
-	String firstMove = answer.substring(0, 2);
-	String secondMove = answer.substring(2);
+	String from = answer.substring(0, 2);
+	String to = answer.substring(2);
 		
 	return new TurnPlay(new Square(from), new Square(to));	
     }

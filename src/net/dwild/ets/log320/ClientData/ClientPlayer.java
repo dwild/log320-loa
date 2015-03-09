@@ -53,14 +53,13 @@ public class ClientPlayer {
     }
 
     public TurnPlay getTurnOpponent() {
-        String answer = protocol.readLine(16);
-        answer = answer.replaceAll("\\s", "");
-
-        int indexOfHyphen = answer.indexOf("-");
-        String from = answer.substring(0, indexOfHyphen);
-        String to = answer.substring(indexOfHyphen + 1);
-
-        return new TurnPlay(new Square(from), new Square(to));
+	String answer = protocol.readLine(16);
+	answer = answer.replaceAll("\\s|-","");
+		
+	String from = answer.substring(0, 2);
+	String to = answer.substring(2);
+		
+	return new TurnPlay(new Square(from), new Square(to));	
     }
 
 

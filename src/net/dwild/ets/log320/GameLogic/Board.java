@@ -89,10 +89,13 @@ public class Board implements Cloneable {
             if (temp > streak) {
                 streak = temp;
             }
+            // Si on a déjà 100%, pas besoin d'aller plus loin
+            if (streak == positions.size()) {
+                return 1;
+            }
         }
 
-        float result = ((float)streak / (float)positions.size());
-        return result;
+        return ((float)streak / (float)positions.size());
     }
 
     public void move(TurnPlay turn) {

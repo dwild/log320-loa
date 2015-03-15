@@ -38,6 +38,18 @@ public class Game {
         commandLineInterface = new CommandLineInterface();
     }
 
+    // Version super préliminaires, valeurs complètement arbitraires
+    public int evaluate(Board aBoard){
+        int value = 0;
+        if (aBoard.checkConnectivity(color) == 1){
+            value = 10;
+        }
+        if (aBoard.checkConnectivity(opponentColor) == 1){
+            value = -10;
+        }
+        return value;
+    }
+
     public void play() {
         client.initConnexion();
         while (client.isConnected()) {
@@ -46,7 +58,6 @@ public class Game {
                 TurnPlay turnOpponent = client.getTurnOpponent();
                 alterBoard(turnOpponent);
                 drawTurn(turnOpponent, opponentColor);
-                System.out.println("Il joue " + turnOpponent + "\n");
                 playTurn();
             } else if (cmd == INVALID_MOVE) {
                 System.out.println("Coup refusé par le serveur.");
@@ -77,16 +88,16 @@ public class Game {
         client.sendTurn(turn);
         alterBoard(turn);
         drawTurn(turn, color);
-        //System.out.println("Connectivity : " + board.checkConnectivity(color));
     }
 
+    // Ici, la connectivity est indiquée pour le débug. Clairement à enlever pour la performance
     public void drawTurn(TurnPlay move, int playerColor){
         String message;
         if (playerColor == Board.WHITE) {
-           message =  "Les blancs jouent " + move + "\n";
+           message =  "Les blancs jouent " + move + "\nConnectivity : " + board.checkConnectivity(Board.WHITE) + "\n";
         }
         else {
-            message =  "Les noirs jouent " + move + "\n";
+            message =  "Les noirs jouent " + move + "\nConnectivity : " + board.checkConnectivity(Board.BLACK) + "\n";
         }
         commandLineInterface.drawBoard(board);
         System.out.println(message);

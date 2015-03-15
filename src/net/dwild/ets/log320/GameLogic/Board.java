@@ -55,6 +55,46 @@ public class Board implements Cloneable {
         }
     }
 
+    // Retourne le pourcentage des pions d'une équipe qui sont connectés entre eux.
+    // Une connectivité de 1 signifie la victoire.
+    public float checkConnectivity(int token){
+        ArrayList<Square> positions = new ArrayList<Square>();
+
+        for (int x = 0; x < 8; x++) {
+            for (int y = 0; y < 8; y++) {
+                if (get(x, y) == token) {
+                    positions.add(new Square(x, y));
+                }
+            }
+        }
+
+        int streak = 0;
+        for (Square pos:positions){
+            ArrayList<Square> line = new ArrayList<Square>();
+            line.add(pos);
+            int temp = 0;
+            for (Square pos1:positions){
+                boolean add = false;
+                for (Square pos2:line){
+                    if (pos1.isAdjacent(pos2)){
+                        add = true;
+                        temp++;
+                        break;
+                    }
+                }
+                if (add){
+                    line.add(pos1);
+                }
+            }
+            if (temp > streak) {
+                streak = temp;
+            }
+        }
+
+        float result = ((float)streak / (float)positions.size());
+        return result;
+    }
+
     public void move(TurnPlay turn) {
         Square startingPosition = turn.getFrom();
         Square endingPosition = turn.getTo();
@@ -85,6 +125,8 @@ public class Board implements Cloneable {
             diagonal2Tokens[(14 - sx - sy)]--;
         }
     }
+
+
 
     public ArrayList<TurnPlay> allPossibleMoves(int token) {
         ArrayList<TurnPlay> possibleMoves = new ArrayList<TurnPlay>();

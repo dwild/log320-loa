@@ -24,6 +24,18 @@ public class Square {
         this.y = verticalIndexes.indexOf(y);
     }
 
+    public boolean isAdjacent(Square otherSquare) {
+        boolean adj = false;
+        if (otherSquare.equals(this)){
+            return false;
+        }
+        else if ((otherSquare.getX() == x - 1 || otherSquare.getX() == x || otherSquare.getX() == x + 1)
+                && (otherSquare.getY() == y - 1 || otherSquare.getY() == y || otherSquare.getY() == y + 1)) {
+            adj = true;
+        }
+        return adj;
+    }
+
     public int getX() {
         return x;
     }

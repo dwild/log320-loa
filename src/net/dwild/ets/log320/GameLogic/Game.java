@@ -50,7 +50,9 @@ public class Game {
                 playTurn();
             } else if (cmd == INVALID_MOVE) {
                 System.out.println("Coup refusé par le serveur.");
-                playTurn();
+                throw new IllegalStateException("invalid move");
+                // L'application produit des illegal moves, parfois. À corriger!
+                //playTurn();
             } else if (cmd == START_WHITE) {
                 this.color = Board.WHITE;
                 this.opponentColor = Board.BLACK;
@@ -75,6 +77,7 @@ public class Game {
         client.sendTurn(turn);
         alterBoard(turn);
         drawTurn(turn, color);
+        //System.out.println("Connectivity : " + board.checkConnectivity(color));
     }
 
     public void drawTurn(TurnPlay move, int playerColor){

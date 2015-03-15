@@ -6,6 +6,7 @@ import net.dwild.ets.log320.Server.IProtocol;
 
 public class ClientPlayer {
     private IProtocol protocol;
+    private Board board;
 
     public ClientPlayer(IProtocol protocol) {
         this.protocol = protocol;
@@ -28,7 +29,7 @@ public class ClientPlayer {
         return cmd;
     }
 
-    public Board getBoard() {
+    public Board createBoard() {
         String answer = protocol.readLine(1024);
 
         int[][] boardArray = new int[8][8];
@@ -49,6 +50,8 @@ public class ClientPlayer {
 
         Board board = new Board(boardArray);
 
+        this.board = board;
+
         return board;
     }
 
@@ -65,5 +68,9 @@ public class ClientPlayer {
 
     public void sendTurn(TurnPlay turn) {
         protocol.send(turn.toString());
+    }
+
+    public Board getBoard(){
+        return this.board;
     }
 }

@@ -24,6 +24,8 @@ public class Game {
     private ClientPlayer client;
     private CommandLineInterface commandLineInterface;
     private Board board;
+    private int color;
+    private int opponentColor;
     // À RETIRER***********************
     private BufferedReader console;
 
@@ -43,24 +45,48 @@ public class Game {
             if (cmd == MOVE_RECEIVED) {
                 TurnPlay turnOpponent = client.getTurnOpponent();
                 alterBoard(turnOpponent);
-                commandLineInterface.drawBoard(board);
+                drawTurn(turnOpponent, opponentColor);
+                System.out.println("Il joue " + turnOpponent + "\n");
                 playTurn();
             } else if (cmd == INVALID_MOVE) {
                 System.out.println("Coup refusé par le serveur.");
                 playTurn();
             } else if (cmd == START_WHITE) {
-                board = client.getBoard();
+                this.color = Board.WHITE;
+                this.opponentColor = Board.BLACK;
+                board = client.createBoard();
                 commandLineInterface.drawBoard(board);
                 playTurn();
             } else if (cmd == START_BLACK) {
-                board = client.getBoard();
+                this.color = Board.BLACK;
+                this.opponentColor = Board.WHITE;
+                board = client.createBoard();
                 commandLineInterface.drawBoard(board);
             }
         }
     }
 
     public void playTurn() {
-        getInputConsoleMove();
+
+        // Temporaire, juste pour faire "jouer" avec le serveur
+        ArrayList<TurnPlay> valid_moves = client.getBoard().allPossibleMoves(color);
+        TurnPlay turn = valid_moves.get(0);
+
+        client.sendTurn(turn);
+        alterBoard(turn);
+        drawTurn(turn, color);
+    }
+
+    public void drawTurn(TurnPlay move, int playerColor){
+        String message;
+        if (playerColor == Board.WHITE) {
+           message =  "Les blancs jouent " + move + "\n";
+        }
+        else {
+            message =  "Les noirs jouent " + move + "\n";
+        }
+        commandLineInterface.drawBoard(board);
+        System.out.println(message);
     }
 
     public void endTurn(TurnPlay move) {

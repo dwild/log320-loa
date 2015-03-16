@@ -1,5 +1,7 @@
 package net.dwild.ets.log320.ClientData;
 
+import java.lang.Math;
+
 public class Square {
     private String horizontalIndexes = "ABCDEFGH";
     private String verticalIndexes = "87654321";
@@ -34,6 +36,13 @@ public class Square {
             adj = true;
         }
         return adj;
+    }
+
+    public double distanceTo(Square otherSquare) {
+        double distanceX = Math.abs(x - otherSquare.getX());
+        double distanceY = Math.abs(y - otherSquare.getY());
+
+        return Math.sqrt(Math.pow(distanceX,2)+Math.pow(distanceY,2));
     }
 
     public int getX() {

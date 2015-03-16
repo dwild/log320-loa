@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.Collections;
 import java.util.Comparator;
 
@@ -26,6 +27,8 @@ public class Game {
     private Board board;
     private int color;
     private int opponentColor;
+    private double playerConnectivity;
+    private double opponentConnectivity;
     // À RETIRER***********************
     private BufferedReader console;
 
@@ -38,16 +41,60 @@ public class Game {
         commandLineInterface = new CommandLineInterface();
     }
 
-    // Version super préliminaires, valeurs complètement arbitraires
-    public int evaluate(Board aBoard){
-        int value = 0;
-        if (aBoard.checkConnectivity(color) == 1){
-            value = 10;
+    // Version super préliminaires
+    public double evaluate(Board aBoard, int playerColor){
+        double value;
+
+        if (playerColor == color){
+            value = aBoard.averageDistance(color);
         }
-        if (aBoard.checkConnectivity(opponentColor) == 1){
-            value = -10;
+        else {
+            value = -aBoard.averageDistance(opponentColor);
         }
+
         return value;
+    }
+
+    public double minMax(Board aBoard, TurnPlay move, int playerColor, double alpha, double beta, int iteration) {
+
+        aBoard.move(move);
+
+        double value = evaluate(aBoard, iteration);
+        if (aBoard.checkConnectivity(color) == 1.00 || aBoard.checkConnectivity(opponentColor) == 1.00){
+            return value;
+        }
+        if (iteration >= 4){
+            return value;
+        }
+
+        // MAX
+        if (playerColor == color){
+            ArrayList<TurnPlay> valid_moves = aBoard.allPossibleMoves(color);
+            double maxScore = -2000.00;
+            for (TurnPlay turn:valid_moves){
+                Double score = minMax(aBoard.clone(), turn, opponentColor, Double.max(alpha, maxScore), beta, iteration+1);
+                maxScore = Double.max(maxScore, score);
+                if (maxScore >= beta){
+                    return maxScore;
+                }
+            }
+            return maxScore;
+        }
+
+        // MIN
+        if (playerColor == opponentColor){
+            ArrayList<TurnPlay> valid_moves = aBoard.allPossibleMoves(opponentColor);
+            Double minScore = 2000.00;
+            for (TurnPlay turn:valid_moves){
+                Double score = minMax(aBoard.clone(), turn, color, alpha, Double.min(beta, minScore), iteration+1);
+                minScore = Double.min(minScore, score);
+                if (minScore <= alpha){
+                    return minScore;
+                }
+            }
+            return minScore;
+        }
+        return 0;
     }
 
     public void play() {
@@ -83,8 +130,22 @@ public class Game {
 
         // Temporaire, juste pour faire "jouer" avec le serveur
         ArrayList<TurnPlay> valid_moves = client.getBoard().allPossibleMoves(color);
-        TurnPlay turn = valid_moves.get(0);
 
+        playerConnectivity = board.checkConnectivity(color);
+        opponentConnectivity = board.checkConnectivity(opponentColor);
+
+        Random randomGenerator = new Random();
+        int i = randomGenerator.nextInt(valid_moves.size());
+        Double maxValue = 0.00;
+        for (int j=0 ; j<valid_moves.size(); j++){
+            Board newBoard = board.clone();
+
+            double value = minMax(newBoard, valid_moves.get(j), opponentColor, -200, 200, 0);
+            if (value > maxValue){
+                i = j;
+            }
+        }
+        TurnPlay turn = valid_moves.get(i);
         client.sendTurn(turn);
         alterBoard(turn);
         drawTurn(turn, color);
@@ -94,10 +155,12 @@ public class Game {
     public void drawTurn(TurnPlay move, int playerColor){
         String message;
         if (playerColor == Board.WHITE) {
-           message =  "Les blancs jouent " + move + "\nConnectivity : " + board.checkConnectivity(Board.WHITE) + "\n";
+           message =  "Les blancs jouent " + move + "\nConnectivity : " + board.checkConnectivity(Board.WHITE)
+                   + "\nAvg Dist : " + board.averageDistance(Board.WHITE);
         }
         else {
-            message =  "Les noirs jouent " + move + "\nConnectivity : " + board.checkConnectivity(Board.BLACK) + "\n";
+            message =  "Les noirs jouent " + move + "\nConnectivity : " + board.checkConnectivity(Board.BLACK)
+                    + "\nAvg Dist : " + board.averageDistance(Board.BLACK);
         }
         commandLineInterface.drawBoard(board);
         System.out.println(message);

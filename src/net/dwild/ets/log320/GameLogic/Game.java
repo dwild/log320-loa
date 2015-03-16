@@ -63,7 +63,7 @@ public class Game {
         if ((int)aBoard.checkConnectivity(color) == 1 || (int)aBoard.checkConnectivity(opponentColor) == 1) {
             return value;
         }
-        if (iteration >= 4){
+        if (iteration >= 3){
             return value;
         }
 
@@ -72,8 +72,8 @@ public class Game {
             ArrayList<TurnPlay> valid_moves = aBoard.allPossibleMoves(color);
             double maxScore = -2000.00;
             for (TurnPlay turn:valid_moves){
-                Double score = minMax(aBoard.clone(), turn, opponentColor, Double.max(alpha, maxScore), beta, iteration+1);
-                maxScore = Double.max(maxScore, score);
+                Double score = minMax(aBoard.clone(), turn, opponentColor, maxValue(alpha, maxScore), beta, iteration+1);
+                maxScore = maxValue(maxScore, score);
                 if (maxScore >= beta){
                     return maxScore;
                 }
@@ -86,8 +86,8 @@ public class Game {
             ArrayList<TurnPlay> valid_moves = aBoard.allPossibleMoves(opponentColor);
             Double minScore = 2000.00;
             for (TurnPlay turn:valid_moves){
-                Double score = minMax(aBoard.clone(), turn, color, alpha, Double.min(beta, minScore), iteration+1);
-                minScore = Double.min(minScore, score);
+                Double score = minMax(aBoard.clone(), turn, color, alpha, minValue(beta, minScore), iteration+1);
+                minScore = minValue(minScore, score);
                 if (minScore <= alpha){
                     return minScore;
                 }
@@ -96,7 +96,15 @@ public class Game {
         }
         return 0;
     }
-
+    
+    public double maxValue(double nb1, double nb2) {
+    	return nb1 > nb2 ? nb1 : nb2;
+    }
+    
+    public double minValue(double nb1, double nb2) {
+    	return nb1 < nb2 ? nb1 : nb2;
+    }
+    
     public void play() {
         client.initConnexion();
         while (client.isConnected()) {
@@ -127,7 +135,7 @@ public class Game {
     }
 
     public void playTurn() {
-
+    	long startTime = System.nanoTime();
         // Temporaire, juste pour faire "jouer" avec le serveur
         ArrayList<TurnPlay> valid_moves = client.getBoard().allPossibleMoves(color);
 
@@ -137,15 +145,21 @@ public class Game {
         Random randomGenerator = new Random();
         int i = randomGenerator.nextInt(valid_moves.size());
         Double maxScore = 0.00;
-        for (int j=0 ; j<valid_moves.size(); j++){
+        double seconds = 0;
+        int j = 0;
+        while (j < valid_moves.size() && seconds < 4.7) {
             Board newBoard = board.clone();
 
             double value = minMax(newBoard, valid_moves.get(j), opponentColor, -200, 200, 0);
             if (value > maxScore){
                 maxScore = value;
-                i = j;
+                i = j++;
             }
+            long solvingTime = System.nanoTime() - startTime;
+            seconds = (double)solvingTime / 1000000000.0;
         }
+        
+        System.out.print("Temps : " + seconds);
         TurnPlay turn = valid_moves.get(i);
         client.sendTurn(turn);
         alterBoard(turn);

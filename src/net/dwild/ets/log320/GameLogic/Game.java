@@ -46,10 +46,10 @@ public class Game {
         double value;
 
         if (playerColor == color){
-            value = aBoard.averageDistance(color);
+            value = -aBoard.averageDistance(color);
         }
         else {
-            value = -aBoard.averageDistance(opponentColor);
+            value = aBoard.averageDistance(opponentColor);
         }
 
         return value;
@@ -59,8 +59,8 @@ public class Game {
 
         aBoard.move(move);
 
-        double value = evaluate(aBoard, iteration);
-        if (aBoard.checkConnectivity(color) == 1.00 || aBoard.checkConnectivity(opponentColor) == 1.00){
+        Double value = evaluate(aBoard, playerColor);
+        if ((int)aBoard.checkConnectivity(color) == 1 || (int)aBoard.checkConnectivity(opponentColor) == 1) {
             return value;
         }
         if (iteration >= 4){
@@ -136,12 +136,13 @@ public class Game {
 
         Random randomGenerator = new Random();
         int i = randomGenerator.nextInt(valid_moves.size());
-        Double maxValue = 0.00;
+        Double maxScore = 0.00;
         for (int j=0 ; j<valid_moves.size(); j++){
             Board newBoard = board.clone();
 
             double value = minMax(newBoard, valid_moves.get(j), opponentColor, -200, 200, 0);
-            if (value > maxValue){
+            if (value > maxScore){
+                maxScore = value;
                 i = j;
             }
         }

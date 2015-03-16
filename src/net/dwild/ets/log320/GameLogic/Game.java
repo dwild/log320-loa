@@ -46,7 +46,7 @@ public class Game {
         double value;
 
         if (playerColor == color){
-            value = -aBoard.averageDistance(color);
+            value = -aBoard.averageDistance(color) + 30;
         }
         else {
             value = aBoard.averageDistance(opponentColor);
@@ -105,6 +105,48 @@ public class Game {
     	return nb1 < nb2 ? nb1 : nb2;
     }
     
+    public double alphabeta(Board board, int depth, double alpha, double beta, Boolean maximizingPlayer) {
+    	if (depth == 0 || (int)board.checkConnectivity(color) == 1 || (int)board.checkConnectivity(opponentColor) == 1) {
+    		return evaluate(board, color); 
+    	}
+    	double value;
+    	if (maximizingPlayer) {
+    		value = Double.MIN_VALUE;
+    		ArrayList<TurnPlay> validMoves = board.allPossibleMoves(color);
+    		for (TurnPlay turn:validMoves){
+    			Board updatedBoard = board.clone();
+    			updatedBoard.move(turn);
+    			value = maxValue(value, alphabeta(updatedBoard, depth - 1, alpha, beta, false));
+    			alpha = maxValue(alpha, value);
+    			if (beta < alpha) {
+    				break;
+    			}
+            }
+    		return value;
+    	}
+    	else {
+    		value = Double.MAX_VALUE;
+    		ArrayList<TurnPlay> validMoves = board.allPossibleMoves(opponentColor);
+    		for (TurnPlay turn:validMoves){
+    			Board updatedBoard = board.clone();
+    			updatedBoard.move(turn);
+    			value = minValue(value, alphabeta(updatedBoard, depth - 1, alpha, beta, true));
+    			beta = minValue(beta, value);
+    			if (beta < alpha) {
+    				break;
+    			}
+            }
+    		return value;
+    	}
+    }
+    
+    public int getColor(Boolean maximizingPlayer) {
+    	if (color == board.BLACK)
+    		return maximizingPlayer ? board.BLACK : board.WHITE;
+    	
+    	return maximizingPlayer ? board.WHITE : board.BLACK;
+    }
+    
     public void play() {
         client.initConnexion();
         while (client.isConnected()) {
@@ -150,22 +192,26 @@ public class Game {
         while (j < valid_moves.size() && seconds < 4.7) {
             Board newBoard = board.clone();
 
-            double value = minMax(newBoard, valid_moves.get(j), opponentColor, -200, 200, 0);
+            newBoard.move(valid_moves.get(j));
+            double value = alphabeta(newBoard, 3, Double.MAX_VALUE, Double.MIN_VALUE, true);
             if (value > maxScore){
                 maxScore = value;
-                i = j++;
+                i = j;
             }
+            System.out.println("Score : " + value + "----- Cout : " + valid_moves.get(j));
+            
+            j++;
             long solvingTime = System.nanoTime() - startTime;
             seconds = (double)solvingTime / 1000000000.0;
         }
         
-        System.out.print("Temps : " + seconds);
+        System.out.println("Temps : " + seconds);
         TurnPlay turn = valid_moves.get(i);
         client.sendTurn(turn);
         alterBoard(turn);
         drawTurn(turn, color);
     }
-
+    
     // Ici, la connectivity est indiquée pour le débug. Clairement à enlever pour la performance
     public void drawTurn(TurnPlay move, int playerColor){
         String message;

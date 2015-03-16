@@ -42,15 +42,9 @@ public class Game {
     }
 
     // Version super préliminaires
-    public double evaluate(Board aBoard, int playerColor){
-        double value;
-
-        if (playerColor == color){
-            value = -aBoard.averageDistance(color) + 30;
-        }
-        else {
-            value = aBoard.averageDistance(opponentColor);
-        }
+    public double evaluate(Board aBoard){
+        double value = aBoard.averageDistance(opponentColor);
+            value -= aBoard.averageDistance(color);
 
         return value;
     }
@@ -59,7 +53,7 @@ public class Game {
 
         aBoard.move(move);
 
-        Double value = evaluate(aBoard, playerColor);
+        Double value = evaluate(aBoard);
         if ((int)aBoard.checkConnectivity(color) == 1 || (int)aBoard.checkConnectivity(opponentColor) == 1) {
             return value;
         }
@@ -107,7 +101,7 @@ public class Game {
     
     public double alphabeta(Board board, int depth, double alpha, double beta, Boolean maximizingPlayer) {
     	if (depth == 0 || (int)board.checkConnectivity(color) == 1 || (int)board.checkConnectivity(opponentColor) == 1) {
-    		return evaluate(board, color); 
+    		return evaluate(board); 
     	}
     	double value;
     	if (maximizingPlayer) {

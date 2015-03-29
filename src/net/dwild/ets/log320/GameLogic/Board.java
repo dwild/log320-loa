@@ -14,10 +14,21 @@ public class Board implements Cloneable {
 
     private int[][] board;
 
-    private int[] lineTokens;
-    private int[] columnTokens;
-    private int[] diagonal1Tokens;
-    private int[] diagonal2Tokens;
+    private int[] lineCount;
+    private int[] columnCount;
+    private int[] diagonalRightCount;
+    private int[] diagonalLeftCount;
+
+    private final P[] potentialMoves = {
+            new PV( 0,-1),
+            new PV( 0, 1),
+            new PH( 1, 0),
+            new PH(-1, 0),
+            new PDR(-1,-1),
+            new PDR( 1, 1),
+            new PDL(-1, 1),
+            new PDL( 1,-1)
+    };
 
     public Board() {
         this(new int[8][8]);
@@ -26,41 +37,41 @@ public class Board implements Cloneable {
     public Board(int[][] board) {
         this.board = board;
 
-        calcTokens();
+        countTokens();
     }
 
-    private Board(int[][] board, int[] lineTokens, int[] columnTokens, int[] diagonal1Tokens, int[] diagonal2Tokens) {
+    private Board(int[][] board, int[] lineCount, int[] columnCount, int[] diagonalRightCount, int[] diagonalLeftCount) {
         this.board = board;
-        this.lineTokens = lineTokens;
-        this.columnTokens = columnTokens;
-        this.diagonal1Tokens = diagonal1Tokens;
-        this.diagonal2Tokens = diagonal2Tokens;
+        this.lineCount = lineCount;
+        this.columnCount = columnCount;
+        this.diagonalRightCount = diagonalRightCount;
+        this.diagonalLeftCount = diagonalLeftCount;
     }
 
-    private void calcTokens() {
-        lineTokens = new int[8];
-        columnTokens = new int[8];
-        diagonal1Tokens = new int[15];
-        diagonal2Tokens = new int[15];
+    private void countTokens() {
+        lineCount = new int[8];
+        columnCount = new int[8];
+        diagonalRightCount = new int[15];
+        diagonalLeftCount = new int[15];
 
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
                 if (get(x, y) != NONE) {
-                    lineTokens[y]++;
-                    columnTokens[x]++;
-                    diagonal1Tokens[(x - y + 7)]++;
-                    diagonal2Tokens[(14 - x - y)]++;
+                    lineCount[y]++;
+                    columnCount[x]++;
+                    diagonalRightCount[(x - y + 7)]++;
+                    diagonalLeftCount[(14 - x - y)]++;
                 }
             }
         }
     }
 
-    private ArrayList<Square> getTokens(int token) {
+    private ArrayList<Square> getTokens(int color) {
         ArrayList<Square> positions = new ArrayList<Square>();
 
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
-                if (get(x, y) == token) {
+                if (get(x, y) == color) {
                     positions.add(new Square(x, y));
                 }
             }
@@ -70,8 +81,8 @@ public class Board implements Cloneable {
 
     // Retourne le pourcentage des pions d'une équipe qui sont connectés entre eux.
     // Une connectivité de 1 signifie la victoire.
-    public double checkConnectivity(int token){
-        ArrayList<Square> positions = getTokens(token);
+    public double checkConnectivity(int color){
+        ArrayList<Square> positions = getTokens(color);
 
         int streak = 0;
         for (Square pos:positions){
@@ -136,30 +147,30 @@ public class Board implements Cloneable {
         int tokenTo = get(ex, ey);
         if (tokenFrom != NONE && tokenFrom != tokenTo) {
             if (tokenTo == NONE) {
-                lineTokens[ey]++;
-                columnTokens[ex]++;
-                diagonal1Tokens[(ex - ey + 7)]++;
-                diagonal2Tokens[(14 - ex - ey)]++;
+                lineCount[ey]++;
+                columnCount[ex]++;
+                diagonalRightCount[(ex - ey + 7)]++;
+                diagonalLeftCount[(14 - ex - ey)]++;
             }
 
             set(startingPosition.getX(), startingPosition.getY(), NONE);
             set(endingPosition.getX(), endingPosition.getY(), tokenFrom);
 
-            lineTokens[sy]--;
-            columnTokens[sx]--;
-            diagonal1Tokens[(sx - sy + 7)]--;
-            diagonal2Tokens[(14 - sx - sy)]--;
+            lineCount[sy]--;
+            columnCount[sx]--;
+            diagonalRightCount[(sx - sy + 7)]--;
+            diagonalLeftCount[(14 - sx - sy)]--;
         }
     }
 
 
 
-    public ArrayList<TurnPlay> allPossibleMoves(int token) {
+    public ArrayList<TurnPlay> allPossibleMoves(int color) {
         ArrayList<TurnPlay> possibleMoves = new ArrayList<TurnPlay>();
 
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
-                if (get(x, y) == token) {
+                if (get(x, y) == color) {
                     Square from = new Square(x, y);
                     for(Square to:validMoves(from)) {
                         possibleMoves.add(new TurnPlay(from, to));
@@ -179,72 +190,37 @@ public class Board implements Cloneable {
 
         int tokenFrom = get(x, y);
 
-        int countHorizontal = lineTokens[y];
-        int countVertical = columnTokens[x];
-        int countDiagonal1 = diagonal1Tokens[(x - y + 7)];
-        int countDiagonal2 = diagonal2Tokens[(14 - x - y)];
+        for(P potentialMove:potentialMoves) {
+            int tokenCount = potentialMove.tokenCount(x, y);
 
-        validMoves.add(new Square(from.getX() - countDiagonal1, from.getY() - countDiagonal1));
-        validMoves.add(new Square(from.getX() + countDiagonal1, from.getY() + countDiagonal1));
+            Square to = new Square( x + tokenCount * potentialMove.dx, y + tokenCount * potentialMove.dy);
+            if (to.getX() >= 0 && to.getX() < 8 && to.getY() >= 0 && to.getY() < 8) {
+                boolean possible = true;
+                int nextX = x;
+                int nextY = y;
+                for (int i = 1; i < tokenCount; i++) {
+                    nextX += potentialMove.dx;
+                    nextY += potentialMove.dy;
 
-        validMoves.add(new Square(from.getX() + countDiagonal2, from.getY() - countDiagonal2));
-        validMoves.add(new Square(from.getX() - countDiagonal2, from.getY() + countDiagonal2));
-
-        validMoves.add(new Square(from.getX() - countHorizontal, from.getY()));
-        validMoves.add(new Square(from.getX() + countHorizontal, from.getY()));
-
-        validMoves.add(new Square(from.getX(), from.getY() - countVertical));
-        validMoves.add(new Square(from.getX(), from.getY() + countVertical));
-
-        ArrayList<Square> finalValidMoves = new ArrayList<Square>();
-        for (Square to : validMoves) {
-            if (to.getX() > 0 && to.getX() < 8 && to.getY() > 0 && to.getY() < 8 && get(to.getX(), to.getY()) == 0) {
-                boolean validMove = true;
-
-                if(Math.abs(from.getX() - to.getX()) > Math.abs(from.getY() - to.getY())) {
-                    Square start = (to.getX() > from.getX())?from:to;
-                    Square end = (to.getX() < from.getX())?from:to;
-
-                    int dx = end.getX() - start.getX();
-                    int dy = end.getY() - start.getY();
-
-                    for(int ix = start.getX(); ix < end.getX(); ix++) {
-                        int iy = start.getY() + ( dy * (ix - start.getX())) / dx; //TODO Optimiser ça?
-
-                        int token = get(ix, iy);
-
-                        if(token != NONE && tokenFrom != token) {
-                            validMove = false;
-                            break;
-                        }
-                    }
-                }
-                else {
-                    Square start = (to.getY() > from.getY())?from:to;
-                    Square end = (to.getY() < from.getY())?from:to;
-
-                    int dx = end.getX() - start.getX();
-                    int dy = end.getY() - start.getY();
-
-                    for(int iy = start.getY(); iy < end.getY(); iy++) {
-                        int ix = start.getX() + ( dx * (iy - start.getY())) / dy; //TODO Optimiser ça?
-
-                        int token = get(ix, iy);
-
-                        if(token != NONE && tokenFrom != token) {
-                            validMove = false;
-                            break;
-                        }
+                    int token = get(nextX, nextY);
+                    // Bloqué par ennemi sur le trajet?
+                    if (token != 0 && tokenFrom != token) {
+                        possible = false;
                     }
                 }
 
-                if(validMove) {
-                    finalValidMoves.add(to);
+                // Bloqué par soi même à la destination
+                if (tokenFrom == get(to.getX(), to.getY())) {
+                    possible = false;
+                }
+
+                if (possible) {
+                    validMoves.add(to);
                 }
             }
         }
 
-        return finalValidMoves;
+        return validMoves;
     }
 
     public boolean validMove(Square from, Square to) {
@@ -256,7 +232,7 @@ public class Board implements Cloneable {
         return board[x][y];
     }
 
-    public void set(int x, int y, int value) {
+    private void set(int x, int y, int value) {
         board[x][y] = value;
     }
 
@@ -267,11 +243,55 @@ public class Board implements Cloneable {
             copyBoard[y] = Arrays.copyOf(board[y], 8);
         }
 
-        int[] copyLineTokens = Arrays.copyOf(lineTokens, 8);
-        int[] copyColumnTokens = Arrays.copyOf(columnTokens, 8);
-        int[] copyDiagonal1Tokens = Arrays.copyOf(diagonal1Tokens, 15);
-        int[] copyDiagonal2Tokens = Arrays.copyOf(diagonal2Tokens, 15);
+        int[] copyLineTokens = Arrays.copyOf(lineCount, 8);
+        int[] copyColumnTokens = Arrays.copyOf(columnCount, 8);
+        int[] copyDiagonal1Tokens = Arrays.copyOf(diagonalRightCount, 15);
+        int[] copyDiagonal2Tokens = Arrays.copyOf(diagonalLeftCount, 15);
 
         return new Board(copyBoard, copyLineTokens, copyColumnTokens, copyDiagonal1Tokens, copyDiagonal2Tokens);
+    }
+
+    abstract class P {
+        public final int dx;
+        public final int dy;
+
+        public P( int dx, int dy){
+            this.dx = dx;
+            this.dy = dy;
+        }
+
+        abstract int tokenCount(int x, int y);
+    }
+
+    class PV extends P {
+        public PV( int dx, int dy) {super(dx, dy);}
+
+        public int tokenCount(int x, int y) {
+            return columnCount[x];
+        }
+    }
+
+    class PH extends P {
+        public PH( int dx, int dy) {super(dx, dy);}
+
+        public int tokenCount(int x, int y) {
+            return lineCount[y];
+        }
+    }
+
+    class PDL extends P {
+        public PDL( int dx, int dy) {super(dx, dy);}
+
+        public int tokenCount(int x, int y) {
+            return diagonalLeftCount[(14 - x - y)];
+        }
+    }
+
+    class PDR extends P {
+        public PDR( int dx, int dy) {super(dx, dy);}
+
+        public int tokenCount(int x, int y) {
+            return diagonalRightCount[(x - y + 7)];
+        }
     }
 }

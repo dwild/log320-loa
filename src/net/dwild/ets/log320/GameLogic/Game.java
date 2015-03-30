@@ -70,11 +70,11 @@ public class Game {
             return evaluate(board);
     	}
 
-        if ((int)board.checkConnectivity(color) == 1){
-            return 100*evaluate(board);
+        if ((int)board.checkFastConnectivity(color) >= 1){
+            return Double.MAX_VALUE;
         }
-        if ((int)board.checkConnectivity(opponentColor) == 1){
-            return -100*evaluate(board);
+        if ((int)board.checkFastConnectivity(opponentColor) >= 1){
+            return -Double.MAX_VALUE;
         }
 
     	double value;
@@ -107,13 +107,6 @@ public class Game {
             }
     		return value;
     	}
-    }
-    
-    public int getColor(Boolean maximizingPlayer) {
-    	if (color == board.BLACK)
-    		return maximizingPlayer ? board.BLACK : board.WHITE;
-    	
-    	return maximizingPlayer ? board.WHITE : board.BLACK;
     }
     
     public void play() {

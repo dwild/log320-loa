@@ -70,6 +70,26 @@ public class Board implements Cloneable {
             }
         }
     }
+    
+    public double checkFastConnectivity(int color) {
+        ArrayList<Square> positions = getTokens(color);
+
+        int totalLinks = 0;
+        for (Square pos1:positions) {
+        	int links = 0;
+            for (Square pos2:positions) {
+            	if (pos1.isAdjacent(pos2)) {
+            		links++;
+            	}
+            	if (links >= 2) {
+            		break;
+            	}
+            }
+            totalLinks += links;
+        }
+        
+        return ((double)totalLinks / (double)(positions.size() * 2 - 2));
+    }
 
     private ArrayList<Square> getTokens(int color) {
         ArrayList<Square> positions = new ArrayList<Square>();

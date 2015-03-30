@@ -31,8 +31,8 @@ public class Square {
         if (otherSquare.equals(this)){
             return false;
         }
-        else if ((otherSquare.getX() == x - 1 || otherSquare.getX() == x || otherSquare.getX() == x + 1)
-                && (otherSquare.getY() == y - 1 || otherSquare.getY() == y || otherSquare.getY() == y + 1)) {
+        else if ((otherSquare.getX() == this.x-1 || otherSquare.getX() == this.x || otherSquare.getX() == this.x+1)
+                && (otherSquare.getY() == this.y-1 || otherSquare.getY() == this.y || otherSquare.getY() == this.y+1)) {
             adj = true;
         }
         return adj;

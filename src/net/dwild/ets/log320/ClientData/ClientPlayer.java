@@ -29,8 +29,11 @@ public class ClientPlayer {
         return cmd;
     }
 
-    public Board createBoard() {
-        String answer = protocol.readLine(1024);
+    public Board createBoard(String override) {
+        String answer = override;
+        if (override.isEmpty()){
+            answer = protocol.readLine(1024);
+        }
 
         int[][] boardArray = new int[8][8];
         String[] boardValues;
@@ -56,13 +59,13 @@ public class ClientPlayer {
     }
 
     public TurnPlay getTurnOpponent() {
-	String answer = protocol.readLine(16);
-	answer = answer.replaceAll("\\s|-","");
-		
-	String from = answer.substring(0, 2);
-	String to = answer.substring(2);
-		
-	return new TurnPlay(new Square(from), new Square(to));	
+        String answer = protocol.readLine(16);
+        answer = answer.replaceAll("\\s|-","");
+
+        String from = answer.substring(0, 2);
+        String to = answer.substring(2);
+
+        return new TurnPlay(new Square(from), new Square(to));
     }
 
 

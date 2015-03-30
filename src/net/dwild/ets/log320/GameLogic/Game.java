@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.Collections;
-import java.util.Comparator;
 
 import net.dwild.ets.log320.ClientData.ClientPlayer;
 import net.dwild.ets.log320.ClientData.Square;
@@ -43,54 +41,12 @@ public class Game {
 
     // Version super préliminaires
     public double evaluate(Board aBoard){
-        double value = aBoard.averageDistance(opponentColor);
-            value -= aBoard.averageDistance(color);
+        double value = 2*(aBoard.averageDistance(opponentColor))+(6)*aBoard.checkConnectivity(opponentColor);
+            value -= (aBoard.averageDistance(color))+(6)*aBoard.checkConnectivity(color);
 
         return value;
     }
 
-    public double minMax(Board aBoard, TurnPlay move, int playerColor, double alpha, double beta, int iteration) {
-
-        aBoard.move(move);
-
-        Double value = evaluate(aBoard);
-        if ((int)aBoard.checkConnectivity(color) == 1 || (int)aBoard.checkConnectivity(opponentColor) == 1) {
-            return value;
-        }
-        if (iteration >= 3){
-            return value;
-        }
-
-        // MAX
-        if (playerColor == color){
-            ArrayList<TurnPlay> valid_moves = aBoard.allPossibleMoves(color);
-            double maxScore = -2000.00;
-            for (TurnPlay turn:valid_moves){
-                Double score = minMax(aBoard.clone(), turn, opponentColor, maxValue(alpha, maxScore), beta, iteration+1);
-                maxScore = maxValue(maxScore, score);
-                if (maxScore >= beta){
-                    return maxScore;
-                }
-            }
-            return maxScore;
-        }
-
-        // MIN
-        if (playerColor == opponentColor){
-            ArrayList<TurnPlay> valid_moves = aBoard.allPossibleMoves(opponentColor);
-            Double minScore = 2000.00;
-            for (TurnPlay turn:valid_moves){
-                Double score = minMax(aBoard.clone(), turn, color, alpha, minValue(beta, minScore), iteration+1);
-                minScore = minValue(minScore, score);
-                if (minScore <= alpha){
-                    return minScore;
-                }
-            }
-            return minScore;
-        }
-        return 0;
-    }
-    
     public double maxValue(double nb1, double nb2) {
     	return nb1 > nb2 ? nb1 : nb2;
     }
@@ -100,9 +56,16 @@ public class Game {
     }
     
     public double alphabeta(Board board, int depth, double alpha, double beta, Boolean maximizingPlayer) {
-    	if (depth == 0 || (int)board.checkConnectivity(color) == 1 || (int)board.checkConnectivity(opponentColor) == 1) {
-    		return evaluate(board); 
+    	if (depth == 0) {
+            return evaluate(board);
     	}
+        if ((int)board.checkConnectivity(color) == 1){
+            return 100*evaluate(board);
+        }
+        if ((int)board.checkConnectivity(opponentColor) == 1){
+            return -100*evaluate(board);
+        }
+
     	double value;
     	if (maximizingPlayer) {
     		value = Double.MIN_VALUE;
@@ -158,13 +121,13 @@ public class Game {
             } else if (cmd == START_WHITE) {
                 this.color = Board.WHITE;
                 this.opponentColor = Board.BLACK;
-                board = client.createBoard();
+                board = client.createBoard("");
                 commandLineInterface.drawBoard(board);
                 playTurn();
             } else if (cmd == START_BLACK) {
                 this.color = Board.BLACK;
                 this.opponentColor = Board.WHITE;
-                board = client.createBoard();
+                board = client.createBoard("");
                 commandLineInterface.drawBoard(board);
             }
         }
@@ -183,11 +146,11 @@ public class Game {
         Double maxScore = 0.00;
         double seconds = 0;
         int j = 0;
-        while (j < valid_moves.size() && seconds < 4.7) {
+        while (j < valid_moves.size() && seconds < 4.8) {
             Board newBoard = board.clone();
 
             newBoard.move(valid_moves.get(j));
-            double value = alphabeta(newBoard, 3, Double.MAX_VALUE, Double.MIN_VALUE, true);
+            double value = alphabeta(newBoard, 7, Double.MAX_VALUE, Double.MIN_VALUE, true);
             if (value > maxScore){
                 maxScore = value;
                 i = j;
@@ -200,6 +163,7 @@ public class Game {
         }
         
         System.out.println("Temps : " + seconds);
+        System.out.println("Score : " + maxScore);
         TurnPlay turn = valid_moves.get(i);
         client.sendTurn(turn);
         alterBoard(turn);
@@ -217,6 +181,7 @@ public class Game {
             message =  "Les noirs jouent " + move + "\nConnectivity : " + board.checkConnectivity(Board.BLACK)
                     + "\nAvg Dist : " + board.averageDistance(Board.BLACK);
         }
+        message += "\n***********************";
         commandLineInterface.drawBoard(board);
         System.out.println(message);
     }

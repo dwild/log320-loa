@@ -5,6 +5,7 @@ import net.dwild.ets.log320.ClientData.TurnPlay;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 public class Board implements Cloneable {
 
@@ -48,6 +49,10 @@ public class Board implements Cloneable {
         this.diagonalLeftCount = diagonalLeftCount;
     }
 
+    public int countTokens(int color){
+        return getTokens(color).size();
+    }
+
     private void countTokens() {
         lineCount = new int[8];
         columnCount = new int[8];
@@ -82,36 +87,101 @@ public class Board implements Cloneable {
     // Retourne le pourcentage des pions d'une équipe qui sont connectés entre eux.
     // Une connectivité de 1 signifie la victoire.
     public double checkConnectivity(int color){
-        ArrayList<Square> positions = getTokens(color);
+        return this.checkConnectivity(color, false);
+    }
 
-        int streak = 0;
-        for (Square pos:positions){
+    // Le flag verbose n'est utilisé que pour le debug
+    public double checkConnectivity(int color, boolean verbose){
+        ArrayList<Square> positions = getTokens(color);
+        ArrayList<Square> checked = new ArrayList<Square>();
+        ArrayList<Square> ignored = new ArrayList<Square>();
+        double max = 0.00;
+        int count = 0;
+        for (Square pos1:positions){
             ArrayList<Square> line = new ArrayList<Square>();
-            line.add(pos);
-            int temp = 0;
-            for (Square pos1:positions){
-                boolean add = false;
-                for (Square pos2:line){
-                    if (pos1.isAdjacent(pos2)){
-                        add = true;
-                        temp++;
-                        break;
+            if (!checked.contains(pos1)){
+                checked.add(pos1);
+                if (verbose){
+                    System.out.println("Adding " + pos1);
+                }
+                line.add(pos1);
+                for (Square pos2:positions){
+                    boolean add = false;
+                    if (!checked.contains(pos2) && !line.contains(pos2)){
+                        if (pos2.isAdjacent(pos1)){
+                            if (verbose){
+                                System.out.println(pos1 + " is adjacent to " + pos2);
+                            }
+                            checked.add(pos2);
+                            add = true;
+                        }
+                        if (!add){
+                            for (Square pos3:line){
+                                if (!checked.contains(pos2)){
+                                    if (pos2.isAdjacent(pos3)){
+                                        if (verbose){
+                                            System.out.println(pos2 + " is adjacent to already found " + pos3);
+                                        }
+                                        checked.add(pos2);
+                                        add = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        if (add){
+                            if (verbose){
+                                System.out.println("Adding " + pos2);
+                            }
+                            line.add(pos2);
+                        } else {
+                            ignored.add(pos2);
+                        }
                     }
                 }
-                if (add){
-                    line.add(pos1);
+                for (Square other:ignored){
+                    if (!line.contains(other)){
+                        boolean add = false;
+                        if (verbose){
+                            System.out.println("Checking ignored square " + other);
+                        }
+                        for (Square found:line){
+                            if (found.isAdjacent(other)){
+                                if (verbose){
+                                    System.out.println(other + " is adjacent to already found " + found);
+                                }
+                                add = true;
+                                break;
+                            }
+                        }
+                        if (add){
+                            line.add(other);
+                            checked.add(other);
+                            if (verbose){
+                                System.out.println("Adding " + other);
+                            }
+                        }
+                    }
                 }
-            }
-            if (temp > streak) {
-                streak = temp;
-            }
-            // Si on a déjà 100%, pas besoin d'aller plus loin
-            if (streak == positions.size()) {
-                return 1;
+                if (line.size() > 0){
+                    count += 1;
+                    //System.out.println(Integer.toString(line.size()) + " / " + Integer.toString(positions.size()) + " = " + Double.toString((double)line.size()/(double)positions.size()));
+                    double value = (double)line.size()/(double)positions.size();
+                    if (value > max){
+                        max = value;
+                    }
+                    if (verbose){
+                        System.out.println("Groupe " + Integer.toString(count));
+                        for (Square sq:line){
+                            System.out.print(sq + ", ");
+                        }
+                        System.out.println("");
+                    }
+                }
             }
         }
 
-        return ((double)streak / (double)positions.size());
+        return max/(double)count;
     }
 
     public double averageDistance(int token){

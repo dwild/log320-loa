@@ -188,6 +188,7 @@ public class Board implements Cloneable {
         ArrayList<Square> positions = getTokens(token);
 
         double distanceTotale = 0.00;
+        int iteration = 0;
         ArrayList<Square> calculated = new ArrayList<Square>();
 
         for(Square pos:positions){
@@ -195,11 +196,12 @@ public class Board implements Cloneable {
             for(Square pos1:positions){
                 if (!calculated.contains(pos1)){
                     distanceTotale += pos.distanceTo(pos1);
+                    iteration++;
                 }
             }
         }
 
-        return distanceTotale/(double)positions.size();
+        return distanceTotale/(double) (iteration);
     }
 
     public void move(TurnPlay turn) {

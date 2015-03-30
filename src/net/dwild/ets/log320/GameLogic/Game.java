@@ -41,8 +41,18 @@ public class Game {
 
     // Version super préliminaires
     public double evaluate(Board aBoard){
-        double value = 2*(aBoard.averageDistance(opponentColor))+(6)*aBoard.checkConnectivity(opponentColor);
-            value -= (aBoard.averageDistance(color))+(6)*aBoard.checkConnectivity(color);
+
+        //double value = 2*(aBoard.averageDistance(opponentColor))+(6)*aBoard.checkConnectivity(opponentColor);
+        //    value -= (aBoard.averageDistance(color))+(6)*aBoard.checkConnectivity(color);
+        //
+        //return value;
+
+        double value = 0;
+
+        value-= aBoard.averageDistance(color);
+        value+= aBoard.checkConnectivity(color) * 40;
+        value-= aBoard.checkConnectivity(opponentColor) * 20;
+        value+= aBoard.allPossibleMoves(opponentColor).size()/2;
 
         return value;
     }
@@ -59,6 +69,7 @@ public class Game {
     	if (depth == 0) {
             return evaluate(board);
     	}
+
         if ((int)board.checkConnectivity(color) == 1){
             return 100*evaluate(board);
         }
@@ -67,8 +78,9 @@ public class Game {
         }
 
     	double value;
+
     	if (maximizingPlayer) {
-    		value = Double.MIN_VALUE;
+    		value = -Double.MAX_VALUE;
     		ArrayList<TurnPlay> validMoves = board.allPossibleMoves(color);
     		for (TurnPlay turn:validMoves){
     			Board updatedBoard = board.clone();
@@ -151,11 +163,13 @@ public class Game {
 
             newBoard.move(valid_moves.get(j));
             double value = alphabeta(newBoard, 7, Double.MAX_VALUE, Double.MIN_VALUE, true);
+
             if (value > maxScore){
                 maxScore = value;
                 i = j;
             }
-            System.out.println("Score : " + value + "----- Cout : " + valid_moves.get(j));
+
+            System.out.println("Cout : " + valid_moves.get(j) + " ----- Score : " + value);
             
             j++;
             long solvingTime = System.nanoTime() - startTime;

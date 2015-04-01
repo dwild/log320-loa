@@ -215,7 +215,7 @@ public class Board implements Cloneable {
             calculated.add(pos);
             for(Square pos1:positions){
                 if (!calculated.contains(pos1)){
-                    distanceTotale += pos.distanceTo(pos1);
+                    distanceTotale += DistanceCache.getInstance().getDistance(pos, pos1);
                     iteration++;
                 }
             }

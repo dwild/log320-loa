@@ -10,7 +10,7 @@ import net.dwild.ets.log320.ClientData.Square;
 public class DistanceCache {
 	
 	private static DistanceCache instance = null;
-	private Map<String, Map<String, Double>> distanceAllPoints = new Hashtable<String, Map<String, Double>>();
+	private double[][] distanceAllPoints = new double[64][64];
 	
 	private DistanceCache(int dimensionXMax, int dimensionYMax) {
 		ArrayList<Point> coords = new ArrayList<Point>();
@@ -21,13 +21,13 @@ public class DistanceCache {
 		}
 	
 		for (Point from : coords) {
-			Map<String, Double> distancePoints =  new Hashtable<String, Double>();
 			for (Point to : coords) {	
-				double distance = Math.sqrt(Math.pow(from.getX() - to.getX(), 2) + Math.pow(from.getY() - to.getY(), 2) );
-				distancePoints.put(toKey(to.getX(), to.getY()), distance);
+				int distanceX = Math.abs((int)(from.getX() - to.getX()));
+				int distanceY = Math.abs((int)(from.getY() - to.getY()));
+				double distance = Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2) );
+				distanceAllPoints[distanceX][distanceY] = distance;
 			}
-			distanceAllPoints.put(toKey(from.getX(), from.getY()), distancePoints);
-		}
+		}	
 	} 
 	
 	public static DistanceCache getInstance() {
@@ -38,13 +38,9 @@ public class DistanceCache {
 	      return instance;
 	   }
 	
-	private String toKey(Double val1, Double val2) {
-		return Integer.toString(val1.intValue()) + Integer.toString(val2.intValue());
-	}
-	
 	public double getDistance(Square from, Square to) {
-		String keyFrom = Integer.toString(from.getX()) + Integer.toString(from.getY());
-		String keyTo = Integer.toString(to.getX()) + Integer.toString(to.getY());
-		return distanceAllPoints.get(keyFrom).get(keyTo);
+		int distanceX = Math.abs(from.getX() - to.getX());
+		int distanceY = Math.abs(from.getY() - to.getY());
+		return distanceAllPoints[distanceX][distanceY];
 	}
 }

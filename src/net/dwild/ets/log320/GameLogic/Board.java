@@ -6,12 +6,16 @@ import net.dwild.ets.log320.ClientData.TurnPlay;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.ListIterator;
 
 public class Board implements Cloneable {
 
     public final static int NONE = 0;
     public final static int BLACK = 2;
     public final static int WHITE = 4;
+
+    private ChunkSet whiteChunks;
+    private ChunkSet blackChunks;
 
     private int[][] board;
 
@@ -31,22 +35,32 @@ public class Board implements Cloneable {
             new PDL( 1,-1)
     };
 
-    public Board() {
-        this(new int[8][8]);
-    }
+    public Board() { this(new int[8][8]); }
 
     public Board(int[][] board) {
         this.board = board;
-
         countTokens();
     }
 
-    private Board(int[][] board, int[] lineCount, int[] columnCount, int[] diagonalRightCount, int[] diagonalLeftCount) {
+    private Board(int[][] board,
+                  int[] lineCount,
+                  int[] columnCount,
+                  int[] diagonalRightCount,
+                  int[] diagonalLeftCount,
+                  ChunkSet whiteChunks,
+                  ChunkSet blackChunks) {
         this.board = board;
         this.lineCount = lineCount;
         this.columnCount = columnCount;
         this.diagonalRightCount = diagonalRightCount;
         this.diagonalLeftCount = diagonalLeftCount;
+        this.whiteChunks = whiteChunks;
+        this.blackChunks = blackChunks;
+    }
+
+    public void createChunks(){
+        whiteChunks = new ChunkSet(getTokens(WHITE));
+        blackChunks = new ChunkSet(getTokens(BLACK));
     }
 
     public int countTokens(int color){
@@ -91,7 +105,7 @@ public class Board implements Cloneable {
         return ((double)totalLinks / (double)(positions.size() * 2 - 2));
     }
 
-    private ArrayList<Square> getTokens(int color) {
+    public ArrayList<Square> getTokens(int color) {
         ArrayList<Square> positions = new ArrayList<Square>();
 
         for (int x = 0; x < 8; x++) {
@@ -224,6 +238,11 @@ public class Board implements Cloneable {
         return distanceTotale/(double) (iteration);
     }
 
+    public double getFragmentation(int color){
+        ChunkSet chunkSet = getChunkSet(color);
+        return ((double)chunkSet.getLarger()/(double)countTokens(color))/getChunkSize(color);
+    }
+
     public void move(TurnPlay turn) {
         Square startingPosition = turn.getFrom();
         Square endingPosition = turn.getTo();
@@ -237,6 +256,7 @@ public class Board implements Cloneable {
         int ey = endingPosition.getY();
 
         int tokenTo = get(ex, ey);
+        updateChunks(turn, tokenFrom);
         if (tokenFrom != NONE && tokenFrom != tokenTo) {
             if (tokenTo == NONE) {
                 lineCount[ey]++;
@@ -255,6 +275,36 @@ public class Board implements Cloneable {
         }
     }
 
+    private void updateChunks(TurnPlay turn, int color){
+        ChunkSet chunkSet = blackChunks;
+        ChunkSet otherChunkSet = whiteChunks;
+        if (color == WHITE){
+            chunkSet = whiteChunks;
+            otherChunkSet = blackChunks;
+        }
+
+        Square startingPosition = turn.getFrom();
+        Square endingPosition = turn.getTo();
+
+        chunkSet.move(startingPosition, endingPosition);
+
+        chunkSet.checkChunkProximity();
+        if (otherChunkSet.checkCollision(endingPosition)){
+            otherChunkSet.checkChunkProximity();
+        }
+    }
+
+    public ChunkSet getChunkSet(int color){
+        ChunkSet chunkSet = whiteChunks;
+        if (color == BLACK){
+            chunkSet = blackChunks;
+        }
+        return chunkSet;
+    }
+
+    public int getChunkSize(int color){
+        return getChunkSet(color).size();
+    }
 
 
     public ArrayList<TurnPlay> allPossibleMoves(int color) {
@@ -340,7 +390,7 @@ public class Board implements Cloneable {
         int[] copyDiagonal1Tokens = Arrays.copyOf(diagonalRightCount, 15);
         int[] copyDiagonal2Tokens = Arrays.copyOf(diagonalLeftCount, 15);
 
-        return new Board(copyBoard, copyLineTokens, copyColumnTokens, copyDiagonal1Tokens, copyDiagonal2Tokens);
+        return new Board(copyBoard, copyLineTokens, copyColumnTokens, copyDiagonal1Tokens, copyDiagonal2Tokens, whiteChunks.clone(), blackChunks.clone());
     }
 
     abstract class P {

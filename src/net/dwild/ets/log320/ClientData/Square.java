@@ -1,6 +1,7 @@
 package net.dwild.ets.log320.ClientData;
 
 import java.lang.Math;
+import java.util.ArrayList;
 
 public class Square {
     private String horizontalIndexes = "ABCDEFGH";
@@ -43,6 +44,32 @@ public class Square {
         double distanceY = Math.abs(y - otherSquare.getY());
 
         return Math.sqrt(Math.pow(distanceX,2)+Math.pow(distanceY,2));
+    }
+
+    public ArrayList<Square> getAdjacents(){
+        ArrayList<Square> tempList = new ArrayList<Square>();
+        tempList.add(new Square(x - 1, y - 1));
+        tempList.add(new Square(x, y - 1));
+        tempList.add(new Square(x + 1, y - 1));
+        tempList.add(new Square(x - 1, y));
+        tempList.add(new Square(x + 1, y));
+        tempList.add(new Square(x - 1, y + 1));
+        tempList.add(new Square(x, y + 1));
+        tempList.add(new Square(x + 1, y + 1));
+        ArrayList<Square> squareList = new ArrayList<Square>();
+        for (Square square:tempList){
+            if (square.isValid()){
+                squareList.add(square);
+            }
+        }
+        return squareList;
+    }
+
+    private boolean isValid(){
+        if (x<0 || x>7 || y<0 || y>7){
+            return false;
+        }
+        return true;
     }
 
     public int getX() {

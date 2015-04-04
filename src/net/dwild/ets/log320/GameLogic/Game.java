@@ -42,17 +42,16 @@ public class Game {
     // Version super préliminaires
     public double evaluate(Board aBoard){
 
-        //double value = 2*(aBoard.averageDistance(opponentColor))+(6)*aBoard.checkConnectivity(opponentColor);
-        //    value -= (aBoard.averageDistance(color))+(6)*aBoard.checkConnectivity(color);
-        //
-        //return value;
+        //double value = 2*(aBoard.averageDistance(opponentColor))+(6)*(aBoard.getFragmentation(opponentColor));
+        //   value -= (aBoard.averageDistance(color))+(6)*(aBoard.getFragmentation(color));
 
         double value = 0;
 
         value-= aBoard.averageDistance(color);
-        value+= aBoard.checkConnectivity(color) * 40;
-        value-= aBoard.checkConnectivity(opponentColor) * 20;
+        value+= aBoard.getFragmentation(color) * 40;
+        value -= aBoard.getFragmentation(opponentColor) * 20;
         value+= aBoard.allPossibleMoves(opponentColor).size()/2;
+
 
         return value;
     }
@@ -70,10 +69,10 @@ public class Game {
             return evaluate(board);
     	}
 
-        if ((int)board.checkFastConnectivity(color) >= 1){
+        if (board.getChunkSize(color) == 1){
             return Double.MAX_VALUE;
         }
-        if ((int)board.checkFastConnectivity(opponentColor) >= 1){
+        if (board.getChunkSize(opponentColor) == 1){
             return -Double.MAX_VALUE;
         }
 
@@ -181,12 +180,16 @@ public class Game {
     public void drawTurn(TurnPlay move, int playerColor){
         String message;
         if (playerColor == Board.WHITE) {
-           message =  "Les blancs jouent " + move + "\nConnectivity : " + board.checkConnectivity(Board.WHITE)
-                   + "\nAvg Dist : " + board.averageDistance(Board.WHITE);
+           message =  "Les blancs jouent " + move
+                   + "\nAvg Dist : " + board.averageDistance(Board.WHITE)
+                    + "\nChunks : " + board.getChunkSize(Board.WHITE)
+                   + "\nFragmentation : " + board.getFragmentation(Board.WHITE);
         }
         else {
-            message =  "Les noirs jouent " + move + "\nConnectivity : " + board.checkConnectivity(Board.BLACK)
-                    + "\nAvg Dist : " + board.averageDistance(Board.BLACK);
+            message =  "Les noirs jouent " + move
+                    + "\nAvg Dist : " + board.averageDistance(Board.BLACK)
+                    + "\nChunks : " + board.getChunkSize(Board.BLACK)
+                    + "\nFragmentation : " + board.getFragmentation(Board.BLACK);
         }
         message += "\n***********************";
         commandLineInterface.drawBoard(board);

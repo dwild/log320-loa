@@ -55,6 +55,8 @@ public class ClientPlayer {
 
         this.board = board;
 
+        board.createChunks();
+
         return board;
     }
 

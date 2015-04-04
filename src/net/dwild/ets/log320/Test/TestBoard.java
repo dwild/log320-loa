@@ -90,7 +90,7 @@ public class TestBoard {
         board.move(new TurnPlay(new Square("G","3"), new Square("G","2")));
 
         assertEquals("Test removed fragmented black", 2, board.getChunkSize(Board.BLACK));
-        
+
         board.move(new TurnPlay(new Square("G","2"), new Square("H","3")));
 
         assertEquals("Test eat fragmented black", 2, board.getChunkSize(Board.BLACK));

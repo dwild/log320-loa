@@ -4,7 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Random;
+import java.util.Scanner;
 
 import net.dwild.ets.log320.ClientData.ClientPlayer;
 import net.dwild.ets.log320.ClientData.Square;
@@ -18,17 +18,18 @@ public class Game {
     char MOVE_RECEIVED = '3';
     char INVALID_MOVE = '4';
 
-    int CASE_VIDE = 0;
-
     private ClientPlayer client;
     private CommandLineInterface commandLineInterface;
     private Board board;
     private int color;
     private int opponentColor;
-    private double playerConnectivity;
-    private double opponentConnectivity;
+
+    private long lastTime;
+
     // À RETIRER***********************
     private BufferedReader console;
+
+    private BoardExecutor boardExecutor;
 
     public Game(ClientPlayer client) {
         board = new Board();
@@ -38,82 +39,22 @@ public class Game {
         console = new BufferedReader(new InputStreamReader(System.in));
         commandLineInterface = new CommandLineInterface();
     }
-
-    // Version super préliminaires
-    public double evaluate(Board aBoard){
-
-        //double value = 2*(aBoard.averageDistance(opponentColor))+(6)*(aBoard.getFragmentation(opponentColor));
-        //   value -= (aBoard.averageDistance(color))+(6)*(aBoard.getFragmentation(color));
-
-        double value = 0;
-
-        value-= aBoard.averageDistance(color);
-        value+= aBoard.getFragmentation(color) * 40;
-        value -= aBoard.getFragmentation(opponentColor) * 20;
-        value+= aBoard.allPossibleMoves(opponentColor).size()/2;
-
-
-        return value;
-    }
-
-    public double maxValue(double nb1, double nb2) {
-    	return nb1 > nb2 ? nb1 : nb2;
-    }
-    
-    public double minValue(double nb1, double nb2) {
-    	return nb1 < nb2 ? nb1 : nb2;
-    }
-    
-    public double alphabeta(Board board, int depth, double alpha, double beta, Boolean maximizingPlayer) {
-    	if (depth == 0) {
-            return evaluate(board);
-    	}
-
-        if (board.getChunkSize(color) == 1){
-            return Double.MAX_VALUE;
-        }
-        if (board.getChunkSize(opponentColor) == 1){
-            return -Double.MAX_VALUE;
-        }
-
-    	double value;
-
-    	if (maximizingPlayer) {
-    		value = -Double.MAX_VALUE;
-    		ArrayList<TurnPlay> validMoves = board.allPossibleMoves(color);
-    		for (TurnPlay turn:validMoves){
-    			Board updatedBoard = board.clone();
-    			updatedBoard.move(turn);
-    			value = maxValue(value, alphabeta(updatedBoard, depth - 1, alpha, beta, false));
-    			alpha = maxValue(alpha, value);
-    			if (beta < alpha) {
-    				break;
-    			}
-            }
-    		return value;
-    	}
-    	else {
-    		value = Double.MAX_VALUE;
-    		ArrayList<TurnPlay> validMoves = board.allPossibleMoves(opponentColor);
-    		for (TurnPlay turn:validMoves){
-    			Board updatedBoard = board.clone();
-    			updatedBoard.move(turn);
-    			value = minValue(value, alphabeta(updatedBoard, depth - 1, alpha, beta, true));
-    			beta = minValue(beta, value);
-    			if (beta < alpha) {
-    				break;
-    			}
-            }
-    		return value;
-    	}
-    }
     
     public void play() {
+        System.out.println("Press enter to continue...");
+        Scanner keyboard = new Scanner(System.in);
+        keyboard.nextLine();
+
         client.initConnexion();
         while (client.isConnected()) {
             char cmd = client.getCommand();
             if (cmd == MOVE_RECEIVED) {
+                lastTime = System.currentTimeMillis();
+
                 TurnPlay turnOpponent = client.getTurnOpponent();
+
+                boardExecutor.changeCurrentNode(turnOpponent);
+
                 alterBoard(turnOpponent);
                 drawTurn(turnOpponent, opponentColor);
                 playTurn();
@@ -123,55 +64,45 @@ public class Game {
                 // L'application produit des illegal moves, parfois. À corriger!
                 //playTurn();
             } else if (cmd == START_WHITE) {
+                lastTime = System.currentTimeMillis();
+
                 this.color = Board.WHITE;
                 this.opponentColor = Board.BLACK;
+
                 board = client.createBoard("");
                 commandLineInterface.drawBoard(board);
+
+                boardExecutor = new BoardExecutor(board, color, opponentColor);
+
                 playTurn();
             } else if (cmd == START_BLACK) {
+                lastTime = System.currentTimeMillis();
+
                 this.color = Board.BLACK;
                 this.opponentColor = Board.WHITE;
+
                 board = client.createBoard("");
                 commandLineInterface.drawBoard(board);
+
+                boardExecutor = new BoardExecutor(board, color, opponentColor);
             }
         }
     }
 
     public void playTurn() {
-    	long startTime = System.nanoTime();
-        // Temporaire, juste pour faire "jouer" avec le serveur
-        ArrayList<TurnPlay> valid_moves = client.getBoard().allPossibleMoves(color);
+        boardExecutor.execute(4, lastTime + 14500);
 
-        playerConnectivity = board.checkConnectivity(color);
-        opponentConnectivity = board.checkConnectivity(opponentColor);
+        try {
+            Thread.sleep(14750);
+        } catch (Exception e) {}
 
-        Random randomGenerator = new Random();
-        int i = randomGenerator.nextInt(valid_moves.size());
-        Double maxScore = 0.00;
-        double seconds = 0;
-        int j = 0;
-        while (j < valid_moves.size() && seconds < 4.8) {
-            Board newBoard = board.clone();
+        BoardNode boardNode = boardExecutor.getCurrentNode().getBestNextMove();
+        TurnPlay turn = boardNode.getLastMove();
 
-            newBoard.move(valid_moves.get(j));
-            double value = alphabeta(newBoard, 7, Double.MAX_VALUE, Double.MIN_VALUE, true);
+        System.out.println("Cout : " + turn + " ----- Score : " + boardNode.getScore());
 
-            if (value > maxScore){
-                maxScore = value;
-                i = j;
-            }
-
-            System.out.println("Cout : " + valid_moves.get(j) + " ----- Score : " + value);
-            
-            j++;
-            long solvingTime = System.nanoTime() - startTime;
-            seconds = (double)solvingTime / 1000000000.0;
-        }
-        
-        System.out.println("Temps : " + seconds);
-        System.out.println("Score : " + maxScore);
-        TurnPlay turn = valid_moves.get(i);
         client.sendTurn(turn);
+        boardExecutor.changeCurrentNode(turn);
         alterBoard(turn);
         drawTurn(turn, color);
     }

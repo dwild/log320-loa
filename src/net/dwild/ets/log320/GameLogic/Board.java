@@ -5,8 +5,6 @@ import net.dwild.ets.log320.ClientData.TurnPlay;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.ListIterator;
 
 public class Board implements Cloneable {
 
@@ -23,6 +21,9 @@ public class Board implements Cloneable {
     private int[] columnCount;
     private int[] diagonalRightCount;
     private int[] diagonalLeftCount;
+
+    private ArrayList<Square> tokensWhite;
+    private ArrayList<Square> tokensBlack;
 
     private final P[] potentialMoves = {
             new PV( 0,-1),
@@ -106,120 +107,64 @@ public class Board implements Cloneable {
     }
 
     public ArrayList<Square> getTokens(int color) {
-        ArrayList<Square> positions = new ArrayList<Square>();
+        if(color == WHITE) {
+            if(tokensWhite == null) {
+                tokensWhite = new ArrayList<Square>();
 
-        for (int x = 0; x < 8; x++) {
-            for (int y = 0; y < 8; y++) {
-                if (get(x, y) == color) {
-                    positions.add(new Square(x, y));
+                for (int x = 0; x < 8; x++) {
+                    for (int y = 0; y < 8; y++) {
+                        if (get(x, y) == WHITE) {
+                            tokensWhite.add(new Square(x, y));
+                        }
+                    }
                 }
             }
+
+            return tokensWhite;
         }
-        return positions;
+        else {
+            if(tokensBlack== null) {
+                tokensBlack = new ArrayList<Square>();
+
+                for (int x = 0; x < 8; x++) {
+                    for (int y = 0; y < 8; y++) {
+                        if (get(x, y) == BLACK) {
+                            tokensBlack.add(new Square(x, y));
+                        }
+                    }
+                }
+            }
+
+            return tokensBlack;
+        }
     }
 
     // Retourne le pourcentage des pions d'une équipe qui sont connectés entre eux.
     // Une connectivité de 1 signifie la victoire.
     public double checkConnectivity(int color){
-        return this.checkConnectivity(color, false);
+        return (double)(getChunkSet(color).getLarger())/(double) (getTokens(color).size());
     }
 
-    // Le flag verbose n'est utilisé que pour le debug
-    public double checkConnectivity(int color, boolean verbose){
+    public double averageMinimumDistance(int color){
         ArrayList<Square> positions = getTokens(color);
-        ArrayList<Square> checked = new ArrayList<Square>();
-        ArrayList<Square> ignored = new ArrayList<Square>();
-        double max = 0.00;
-        int count = 0;
-        for (Square pos1:positions){
-            ArrayList<Square> line = new ArrayList<Square>();
-            if (!checked.contains(pos1)){
-                checked.add(pos1);
-                if (verbose){
-                    System.out.println("Adding " + pos1);
-                }
-                line.add(pos1);
-                for (Square pos2:positions){
-                    boolean add = false;
-                    if (!checked.contains(pos2) && !line.contains(pos2)){
-                        if (pos2.isAdjacent(pos1)){
-                            if (verbose){
-                                System.out.println(pos1 + " is adjacent to " + pos2);
-                            }
-                            checked.add(pos2);
-                            add = true;
-                        }
-                        if (!add){
-                            for (Square pos3:line){
-                                if (!checked.contains(pos2)){
-                                    if (pos2.isAdjacent(pos3)){
-                                        if (verbose){
-                                            System.out.println(pos2 + " is adjacent to already found " + pos3);
-                                        }
-                                        checked.add(pos2);
-                                        add = true;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        if (add){
-                            if (verbose){
-                                System.out.println("Adding " + pos2);
-                            }
-                            line.add(pos2);
-                        } else {
-                            ignored.add(pos2);
-                        }
-                    }
-                }
-                for (Square other:ignored){
-                    if (!line.contains(other)){
-                        boolean add = false;
-                        if (verbose){
-                            System.out.println("Checking ignored square " + other);
-                        }
-                        for (Square found:line){
-                            if (found.isAdjacent(other)){
-                                if (verbose){
-                                    System.out.println(other + " is adjacent to already found " + found);
-                                }
-                                add = true;
-                                break;
-                            }
-                        }
-                        if (add){
-                            line.add(other);
-                            checked.add(other);
-                            if (verbose){
-                                System.out.println("Adding " + other);
-                            }
-                        }
-                    }
-                }
-                if (line.size() > 0){
-                    count += 1;
-                    //System.out.println(Integer.toString(line.size()) + " / " + Integer.toString(positions.size()) + " = " + Double.toString((double)line.size()/(double)positions.size()));
-                    double value = (double)line.size()/(double)positions.size();
-                    if (value > max){
-                        max = value;
-                    }
-                    if (verbose){
-                        System.out.println("Groupe " + Integer.toString(count));
-                        for (Square sq:line){
-                            System.out.print(sq + ", ");
-                        }
-                        System.out.println("");
-                    }
+
+        double distanceTotale = 0.00;
+
+        for(Square pos:positions){
+            double minDistance = Double.MAX_VALUE;
+            for(Square pos1:positions){
+                if (!pos.equals(pos1)){
+                    minDistance = Math.min(minDistance, pos.distanceTo(pos1));
                 }
             }
+            distanceTotale+= minDistance;
         }
 
-        return max/(double)count;
+        return distanceTotale/ (double) (positions.size());
     }
 
-    public double averageDistance(int token){
-        ArrayList<Square> positions = getTokens(token);
+    public double averageDistance(int color){
+        ArrayList<Square> positions = getTokens(color);
 
         double distanceTotale = 0.00;
         int iteration = 0;
@@ -229,7 +174,7 @@ public class Board implements Cloneable {
             calculated.add(pos);
             for(Square pos1:positions){
                 if (!calculated.contains(pos1)){
-                    distanceTotale += DistanceCache.getInstance().getDistance(pos, pos1);
+                    distanceTotale += pos.distanceTo(pos1);
                     iteration++;
                 }
             }
@@ -256,8 +201,9 @@ public class Board implements Cloneable {
         int ey = endingPosition.getY();
 
         int tokenTo = get(ex, ey);
-        updateChunks(turn, tokenFrom);
         if (tokenFrom != NONE && tokenFrom != tokenTo) {
+            updateChunks(turn, tokenFrom);
+
             if (tokenTo == NONE) {
                 lineCount[ey]++;
                 columnCount[ex]++;
@@ -272,6 +218,9 @@ public class Board implements Cloneable {
             columnCount[sx]--;
             diagonalRightCount[(sx - sy + 7)]--;
             diagonalLeftCount[(14 - sx - sy)]--;
+
+            tokensWhite = null;
+            tokensBlack = null;
         }
     }
 
@@ -306,18 +255,26 @@ public class Board implements Cloneable {
         return getChunkSet(color).size();
     }
 
+    public int minimumPossibleMoves(int color) {
+        ArrayList<Square> positions = getTokens(color);
+
+        int min = Integer.MAX_VALUE;
+        for (Square position:positions) {
+            min = Math.min(min, validMoves(position).size());
+        }
+
+        return min;
+    }
 
     public ArrayList<TurnPlay> allPossibleMoves(int color) {
+        ArrayList<Square> positions = getTokens(color);
+
         ArrayList<TurnPlay> possibleMoves = new ArrayList<TurnPlay>();
 
-        for (int x = 0; x < 8; x++) {
-            for (int y = 0; y < 8; y++) {
-                if (get(x, y) == color) {
-                    Square from = new Square(x, y);
-                    for(Square to:validMoves(from)) {
-                        possibleMoves.add(new TurnPlay(from, to));
-                    }
-                }
+        int min = Integer.MAX_VALUE;
+        for (Square position:positions) {
+            for(Square to:validMoves(position)) {
+                possibleMoves.add(new TurnPlay(position, to));
             }
         }
 
@@ -368,6 +325,30 @@ public class Board implements Cloneable {
     public boolean validMove(Square from, Square to) {
         ArrayList<Square> validMoves = validMoves(from);
         return validMoves.contains(to);
+    }
+
+    // Version super préliminaires
+    public double evaluate(int color, int opponentColor){
+        double value = 0;
+
+        value-= averageDistance(color);
+
+        //Essayer de rester connecter a au moins un pion
+        value-= averageMinimumDistance(color) * 6;
+        value+= averageMinimumDistance(opponentColor) * 2;
+
+        //Essai de rester connecté et de déconnecter l'ennemi
+        value+= checkConnectivity(color) * 40;
+        value-= checkConnectivity(opponentColor) * 15;
+
+        //Limite les mouvement possible de l'ennemi
+        value+= allPossibleMoves(opponentColor).size()/5;
+
+        //Tente de bloquer un pion et tente de débloquer nos pions bloqué
+        value-= minimumPossibleMoves(opponentColor) * 6;
+        value+= minimumPossibleMoves(color) * 12;
+
+        return value;
     }
 
     public int get(int x, int y) {

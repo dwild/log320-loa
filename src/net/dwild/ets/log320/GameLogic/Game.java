@@ -72,7 +72,7 @@ public class Game {
                 board = client.createBoard("");
                 commandLineInterface.drawBoard(board);
 
-                boardExecutor = new BoardExecutor(board, color, opponentColor);
+                boardExecutor = new BoardExecutor(board, color, opponentColor, true);
 
                 playTurn();
             } else if (cmd == START_BLACK) {
@@ -84,7 +84,7 @@ public class Game {
                 board = client.createBoard("");
                 commandLineInterface.drawBoard(board);
 
-                boardExecutor = new BoardExecutor(board, color, opponentColor);
+                boardExecutor = new BoardExecutor(board, color, opponentColor, false);
             }
         }
     }

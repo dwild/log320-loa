@@ -18,8 +18,8 @@ public class BoardNode {
 
     private BoardNode parent;
 
-    public BoardNode(Board currentBoard) {
-        this(null, currentBoard, null, true);
+    public BoardNode(Board currentBoard, boolean maximizingPlayer) {
+        this(null, currentBoard, null, maximizingPlayer);
     }
 
     public BoardNode(BoardNode parent, Board currentBoard, TurnPlay lastMove, boolean maximizingPlayer) {

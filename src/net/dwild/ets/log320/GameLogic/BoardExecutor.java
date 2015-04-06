@@ -14,11 +14,11 @@ public class BoardExecutor {
     private int color;
     private int opponentColor;
 
-    public BoardExecutor(Board currentBoard, int color, int opponentColor) {
+    public BoardExecutor(Board currentBoard, int color, int opponentColor, boolean maximizingPlayer) {
         this.color = color;
         this.opponentColor = opponentColor;
 
-        currentNode = new BoardNode(currentBoard);
+        currentNode = new BoardNode(currentBoard, maximizingPlayer);
         currentNode.generateChildrens(color, opponentColor);
         executor = Executors.newFixedThreadPool(currentNode.getChildrens().size());
     }

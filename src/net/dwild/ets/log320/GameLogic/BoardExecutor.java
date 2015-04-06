@@ -88,7 +88,7 @@ public class BoardExecutor {
             }
 
             if (maximizingPlayer) {
-                double value = alpha;
+                double value = -Double.MAX_VALUE;
 
                 ArrayList<TurnPlay> validMoves = board.allPossibleMoves(color);
                 for (TurnPlay turn:validMoves){
@@ -109,7 +109,7 @@ public class BoardExecutor {
                 return value;
             }
             else {
-                double value = beta;
+                double value = Double.MAX_VALUE;
 
                 ArrayList<TurnPlay> validMoves = board.allPossibleMoves(opponentColor);
                 for (TurnPlay turn:validMoves){

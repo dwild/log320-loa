@@ -331,22 +331,24 @@ public class Board implements Cloneable {
     public double evaluate(int color, int opponentColor){
         double value = 0;
 
-        value-= averageDistance(color);
+        value-= averageDistance(color) * 10;
+        value+= averageDistance(opponentColor) * 5;
 
         //Essayer de rester connecter a au moins un pion
-        value-= averageMinimumDistance(color) * 6;
-        value+= averageMinimumDistance(opponentColor) * 2;
+        value-= averageMinimumDistance(color) * (10 / getChunkSize(color));
+        value+= averageMinimumDistance(opponentColor) * (5 / getChunkSize(opponentColor));
 
         //Essai de rester connecté et de déconnecter l'ennemi
-        value+= checkConnectivity(color) * 40;
-        value-= checkConnectivity(opponentColor) * 15;
+        value+= checkConnectivity(color) * 4;
+        value-= checkConnectivity(opponentColor) * 2;
 
         //Limite les mouvement possible de l'ennemi
-        value+= allPossibleMoves(opponentColor).size()/5;
+        //
+        value-= allPossibleMoves(opponentColor).size()/5;
 
         //Tente de bloquer un pion et tente de débloquer nos pions bloqué
-        value-= minimumPossibleMoves(opponentColor) * 6;
-        value+= minimumPossibleMoves(color) * 12;
+        value-= minimumPossibleMoves(opponentColor) * 3;
+        value+= minimumPossibleMoves(color) * 4;
 
         return value;
     }

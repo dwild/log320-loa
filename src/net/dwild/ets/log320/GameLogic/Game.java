@@ -90,10 +90,10 @@ public class Game {
     }
 
     public void playTurn() {
-        boardExecutor.execute(4, lastTime + 14500);
+        boardExecutor.execute(4, lastTime + 4500);
 
         try {
-            Thread.sleep(14750);
+            Thread.sleep(4750 - System.currentTimeMillis() + lastTime);
         } catch (Exception e) {}
 
         BoardNode boardNode = boardExecutor.getCurrentNode().getBestNextMove();

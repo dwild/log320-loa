@@ -63,6 +63,10 @@ public class BoardNode {
         this.parent = null;
     }
 
+    public boolean isMaximizingPlayer() {
+        return maximizingPlayer;
+    }
+
     public BoardNode getParent() {
         return parent;
     }

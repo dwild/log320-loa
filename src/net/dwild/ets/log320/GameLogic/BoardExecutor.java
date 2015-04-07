@@ -26,6 +26,8 @@ public class BoardExecutor {
     public void changeCurrentNode(TurnPlay move) {
         executor.shutdownNow();
 
+        /*
+
         for(BoardNode board:currentNode.getChildrens()) {
             if(move.equals(board.getLastMove())) {
                 board.nullParent();
@@ -35,6 +37,13 @@ public class BoardExecutor {
                 break;
             }
         }
+
+        */
+        Board board = currentNode.getCurrentBoard();
+        board.move(move);
+
+        currentNode = new BoardNode(board, !currentNode.isMaximizingPlayer());
+        currentNode.generateChildrens(color, opponentColor);
     }
 
     public void execute(int depth, long maxTime) {

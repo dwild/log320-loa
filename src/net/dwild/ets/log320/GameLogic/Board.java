@@ -339,7 +339,7 @@ public class Board implements Cloneable {
     public double evaluate(int color, int opponentColor){
         double value = 0;
 
-        value-= averageDistance(color) * 10;
+        value-= averageDistance(color) * 12;
         value+= averageDistance(opponentColor) * 8;
 
         //Essayer de rester connecter a au moins un pion
@@ -347,11 +347,11 @@ public class Board implements Cloneable {
         value+= averageMinimumDistance(opponentColor) * 3;
 
         //On veut le moins de chunk pour nous mais le plus pour eux
-        value-= getChunkSize(color) * 2;
+        value-= getChunkSize(color);
         value+= getChunkSize(opponentColor);
 
         //Essai de rester connecté et de déconnecter l'ennemi
-        value+= checkConnectivity(color) * 5;
+        value+= checkConnectivity(color) * 4;
         value-= checkConnectivity(opponentColor) * 2;
 
         //Minimiser le nombre de move ennemi
@@ -365,11 +365,11 @@ public class Board implements Cloneable {
         value+= numberOfLinks(color, 3) / 7;
 
         //Minimiser le nombre de pion sur les bords
-        value-= countTokenBorder(color, 0) / 4 + countTokenBorder(color, 1) / 8;
+        value-= countTokenBorder(color, 0) / 2 + countTokenBorder(color, 1) / 4;
 
         //Minimiser nos pions, maximiser les leur
-        value-= getTokens(color).size() / 3;
-        value+= getTokens(opponentColor).size();
+        value-= getTokens(color).size() / 4;
+        value+= getTokens(opponentColor).size() / 4;
 
         return value;
     }

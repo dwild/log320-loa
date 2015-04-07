@@ -98,8 +98,8 @@ public class BoardExecutor {
                     Board updatedBoard = board.clone();
                     updatedBoard.move(turn);
 
-                    value = Double.max(value, alphabeta(updatedBoard, depth - 1, maxTime, alpha, beta, false));
-                    alpha = Double.max(value, alpha);
+                    value = doubleMax(value, alphabeta(updatedBoard, depth - 1, maxTime, alpha, beta, false));
+                    alpha = doubleMax(value, alpha);
 
                     if (beta < alpha) {
                         break;
@@ -119,8 +119,8 @@ public class BoardExecutor {
                     Board updatedBoard = board.clone();
                     updatedBoard.move(turn);
 
-                    value = Double.min(value, alphabeta(updatedBoard, depth - 1, maxTime, alpha, beta, true));
-                    beta = Double.min(beta, value);
+                    value = doubleMin(value, alphabeta(updatedBoard, depth - 1, maxTime, alpha, beta, true));
+                    beta = doubleMin(beta, value);
 
                     if (beta < alpha) {
                         break;
@@ -129,6 +129,14 @@ public class BoardExecutor {
 
                 return value;
             }
+        }
+
+        private double doubleMin(double d1, double d2) {
+            return (d1 < d2)?d1:d2;
+        }
+
+        private double doubleMax(double d1, double d2) {
+            return (d1 > d2)?d1:d2;
         }
     }
 }

@@ -85,25 +85,33 @@ public class Board implements Cloneable {
             }
         }
     }
-    
+
     public double checkFastConnectivity(int color) {
+        ArrayList<Square> positions = getTokens(color);
+
+        int totalLinks = numberOfLinks(color, 2);
+        
+        return ((double)totalLinks / (double)(positions.size() * 2 - 2));
+    }
+
+    public int numberOfLinks(int color, int maxLink) {
         ArrayList<Square> positions = getTokens(color);
 
         int totalLinks = 0;
         for (Square pos1:positions) {
-        	int links = 0;
+            int links = 0;
             for (Square pos2:positions) {
-            	if (pos1.isAdjacent(pos2)) {
-            		links++;
-            	}
-            	if (links >= 2) {
-            		break;
-            	}
+                if (pos1.isAdjacent(pos2)) {
+                    links++;
+                }
+                if (links >= maxLink) {
+                    break;
+                }
             }
             totalLinks += links;
         }
-        
-        return ((double)totalLinks / (double)(positions.size() * 2 - 2));
+
+        return totalLinks;
     }
 
     public ArrayList<Square> getTokens(int color) {
@@ -332,25 +340,54 @@ public class Board implements Cloneable {
         double value = 0;
 
         value-= averageDistance(color) * 10;
-        value+= averageDistance(opponentColor) * 5;
+        value+= averageDistance(opponentColor) * 8;
 
         //Essayer de rester connecter a au moins un pion
-        value-= averageMinimumDistance(color) * (10 / getChunkSize(color));
-        value+= averageMinimumDistance(opponentColor) * (5 / getChunkSize(opponentColor));
+        value-= averageMinimumDistance(color) * 8;
+        value+= averageMinimumDistance(opponentColor) * 3;
+
+        //On veut le moins de chunk pour nous mais le plus pour eux
+        value-= getChunkSize(color) * 2;
+        value+= getChunkSize(opponentColor);
 
         //Essai de rester connecté et de déconnecter l'ennemi
         value+= checkConnectivity(color) * 5;
         value-= checkConnectivity(opponentColor) * 2;
 
-        //Limite les mouvement possible de l'ennemi
-        //
-        value-= allPossibleMoves(opponentColor).size()/countTokens(opponentColor);
+        //Minimiser le nombre de move ennemi
+        value-= allPossibleMoves(opponentColor).size() / countTokens(opponentColor) * 2;
 
         //Tente de bloquer un pion et tente de débloquer nos pions bloqué
         value-= minimumPossibleMoves(opponentColor) * 3;
         value+= minimumPossibleMoves(color) * 4;
 
+        //Maximiser le nombre de lien pour en avoir de backup, avec un max de 3
+        value+= numberOfLinks(color, 3) / 7;
+
+        //Minimiser le nombre de pion sur les bords
+        value-= countTokenBorder(color, 0) / 4 + countTokenBorder(color, 1) / 8;
+
+        //Minimiser nos pions, maximiser les leur
+        value-= getTokens(color).size() / 3;
+        value+= getTokens(opponentColor).size();
+
         return value;
+    }
+
+    public int countTokenBorder(int color, int border) {
+        int count = 0;
+
+        int b1 = 0 + border;
+        int b2 = 7 - border;
+
+        for (int i = 0; i < 8; i++) {
+            if(get(b1, i) == color) count++;
+            if(get(i, b1) == color) count++;
+            if(get(b2, i) == color) count++;
+            if(get(i, b2) == color) count++;
+        }
+
+        return count;
     }
 
     public int get(int x, int y) {

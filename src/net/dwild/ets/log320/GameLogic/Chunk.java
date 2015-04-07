@@ -42,6 +42,9 @@ public class Chunk {
             System.out.println("Starting with " + first);
         }
         // La double boucle est pas cool, mais nécessaire, même si sq1 n'est jamais utilisé directement.
+        // Si on passe une seule fois, il peut arriver (il VA arriver) des fois où une case n'est adjacente avec aucune
+        // des cases déjà retenues, mais adjacente avec de futures cases adjacentes. Ça aurait comme effet de créer des
+        // Chunks incomplets. Of course, ça peut être rattrapé par l'étape de fusion, qui vient plus tard.
         for (Square sq1:content){
             for (Square sq2 : content) {
                 if (!connected.contains(sq2)) {
@@ -111,8 +114,8 @@ public class Chunk {
         return content.size();
     }
 
-    // Cette méthode va chercher l'intersection entre le set de Proximity de ce Chunk et
-    // la list des Square constituant l'autre Chunk. S'il y a une intersection, les deux
+    // Cette méthode va chercher l'intersection entre le proximity de ce Chunk et
+    // la liste des Square constituant l'autre Chunk. S'il y a une intersection, les deux
     // chunk devront être mergés
     public boolean isAdjacent(Chunk otherChunk){
         if (this.equals(otherChunk)){

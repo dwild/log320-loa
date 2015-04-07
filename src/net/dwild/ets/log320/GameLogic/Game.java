@@ -41,9 +41,9 @@ public class Game {
     }
     
     public void play() {
-        System.out.println("Press enter to continue...");
-        Scanner keyboard = new Scanner(System.in);
-        keyboard.nextLine();
+        //System.out.println("Press enter to continue...");
+        //Scanner keyboard = new Scanner(System.in);
+        //keyboard.nextLine();
 
         client.initConnexion();
         while (client.isConnected()) {
@@ -90,10 +90,10 @@ public class Game {
     }
 
     public void playTurn() {
-        boardExecutor.execute(4, lastTime + 4500);
+        boardExecutor.execute(4, lastTime + 9500);
 
         try {
-            Thread.sleep(4750 - System.currentTimeMillis() + lastTime);
+            Thread.sleep(9750 - System.currentTimeMillis() + lastTime);
         } catch (Exception e) {}
 
         BoardNode boardNode = boardExecutor.getCurrentNode().getBestNextMove();
